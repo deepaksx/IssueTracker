@@ -11,20 +11,21 @@ import os
 from werkzeug.utils import secure_filename
 import uuid
 from models import Database, User, Issue, AuditLog, Document, Company, Department, Application
+from config import config
 
+# Initialize Flask app
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-change-in-production'  # Change this in production!
 
-# File upload configuration
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
-ALLOWED_EXTENSIONS = {'pdf'}
-MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
+# Load configuration based on environment
+env = os.environ.get('FLASK_ENV', 'development')
+app.config.from_object(config[env])
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
+# Initialize production config if needed
+if env == 'production':
+    config[env].init_app(app)
 
 # Create uploads directory if it doesn't exist
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -69,7 +70,7 @@ def admin_required(f):
 
 def allowed_file(filename):
     """Check if file extension is allowed"""
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
 def format_file_size(size_bytes):
