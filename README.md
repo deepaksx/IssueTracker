@@ -290,6 +290,16 @@ Deploy on your company's internal network for secure, private access.
 📘 **[Complete Internal Network Deployment Guide →](INTERNAL_DEPLOYMENT.md)**
 
 **Quick Start for Internal Network:**
+
+**📖 Choose Your Guide:**
+
+- **👶 [EASY_SETUP.md](EASY_SETUP.md)** - For non-technical users (step-by-step, no jargon)
+- **✅ [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md)** - Printable checklist to follow
+- **🎯 [STEP_BY_STEP.md](STEP_BY_STEP.md)** - Detailed walkthrough (like a recipe)
+- **⚡ [QUICKSTART_INTERNAL.md](QUICKSTART_INTERNAL.md)** - For experienced IT staff
+- **📚 [INTERNAL_DEPLOYMENT.md](INTERNAL_DEPLOYMENT.md)** - Complete technical documentation
+
+**Simple Steps:**
 1. Set up Windows Server or dedicated PC
 2. Run `install_windows_service.bat` as Administrator
 3. Configure firewall (port 8000)
