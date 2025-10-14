@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - EFI IT Issue Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-pencil"></i> Edit User: {{ user.username }}</h1>
+    <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Users
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                User Details
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_user', user_id=user.id) }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                        <small class="form-text text-muted">Username must be unique</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="password" name="password" minlength="6">
+                        <small class="form-text text-muted">Leave blank to keep current password</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="viewer" {% if user.role == 'viewer' %}selected{% endif %}>Viewer (Read-only access)</option>
+                            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin (Full access)</option>
+                        </select>
+                        <small class="form-text text-muted">
+                            <strong>Admin:</strong> Can create, edit, delete issues and manage users<br>
+                            <strong>Viewer:</strong> Can only view issues and reports
+                        </small>
+                    </div>
+
+                    {% if user.id == current_user.id %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Note:</strong> You are editing your own account. Be careful when changing your role.
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check-circle"></i> Update User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

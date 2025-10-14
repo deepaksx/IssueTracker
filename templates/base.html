@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EFI IT Issue Tracker{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        // Apply sidebar state immediately to prevent flash
+        (function() {
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
+        })();
+    </script>
+</head>
+<body class="sidebar-loading">
+    {% if current_user.is_authenticated %}
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <!-- Sidebar Header with Brand -->
+            <div class="sidebar-header">
+                <a href="{{ url_for('dashboard') }}" class="sidebar-brand">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>EFI IssueTracker</span>
+                </a>
+            </div>
+
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">
+                    <ul class="sidebar-menu">
+                        <li class="sidebar-menu-item">
+                            <a href="{{ url_for('dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                                <i class="bi bi-grid"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        {% if current_user.is_admin() %}
+                        <li class="sidebar-menu-item">
+                            <a href="{{ url_for('add_issue') }}" class="sidebar-menu-link {% if request.endpoint == 'add_issue' %}active{% endif %}">
+                                <i class="bi bi-plus-circle"></i>
+                                <span>Add Issue</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Management</div>
+                    <ul class="sidebar-menu">
+                        <li class="sidebar-menu-item">
+                            <a href="{{ url_for('audit_log') }}" class="sidebar-menu-link {% if request.endpoint == 'audit_log' %}active{% endif %}">
+                                <i class="bi bi-clock-history"></i>
+                                <span>Audit Log</span>
+                            </a>
+                        </li>
+                        {% if current_user.is_admin() %}
+                        <li class="sidebar-menu-item">
+                            <a href="{{ url_for('manage_users') }}" class="sidebar-menu-link {% if request.endpoint == 'manage_users' %}active{% endif %}">
+                                <i class="bi bi-people"></i>
+                                <span>Users</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{{ url_for('manage_companies') }}" class="sidebar-menu-link {% if request.endpoint == 'manage_companies' %}active{% endif %}">
+                                <i class="bi bi-building"></i>
+                                <span>Companies</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{{ url_for('manage_departments') }}" class="sidebar-menu-link {% if request.endpoint == 'manage_departments' %}active{% endif %}">
+                                <i class="bi bi-diagram-3"></i>
+                                <span>Departments</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{{ url_for('manage_applications') }}" class="sidebar-menu-link {% if request.endpoint == 'manage_applications' %}active{% endif %}">
+                                <i class="bi bi-app-indicator"></i>
+                                <span>Applications</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer with User Info -->
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar">
+                        {{ current_user.username[0] }}
+                    </div>
+                    <div class="sidebar-user-info">
+                        <span class="sidebar-user-name">{{ current_user.username }}</span>
+                        <span class="sidebar-user-role">{{ current_user.role }}</span>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="sidebar-logout" title="Logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Sidebar Toggle Button -->
+            <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+                <i class="bi bi-list"></i>
+            </button>
+    {% endif %}
+
+            <!-- Main Content -->
+            <main class="container">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="container text-center">
+                    <span class="text-muted">EFI IT Issue Tracker &copy; 2025 | Developed by EFI IT</span>
+                </div>
+            </footer>
+
+        {% if current_user.is_authenticated %}
+        </div><!-- .main-content -->
+    </div><!-- .app-container -->
+    {% endif %}
+
+    <!-- Flash Messages (Bottom Toast) -->
+    <div class="toast-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="toast-notification alert-{{ category }}" role="alert">
+                    <div class="toast-content">
+                        <span class="toast-icon">
+                            {% if category == 'success' %}
+                                <i class="bi bi-check-circle-fill"></i>
+                            {% elif category == 'danger' %}
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                            {% elif category == 'warning' %}
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle-fill"></i>
+                            {% endif %}
+                        </span>
+                        <span class="toast-message">{{ message }}</span>
+                    </div>
+                    <button type="button" class="toast-close" onclick="this.parentElement.remove()">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+
+    <script>
+    // Auto-dismiss toast notifications after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const toasts = document.querySelectorAll('.toast-notification');
+        toasts.forEach(function(toast, index) {
+            // Stagger the appearance
+            setTimeout(function() {
+                toast.classList.add('show');
+            }, index * 100);
+
+            // Auto-dismiss after 5 seconds
+            setTimeout(function() {
+                toast.classList.remove('show');
+                setTimeout(function() {
+                    toast.remove();
+                }, 300);
+            }, 5000 + (index * 100));
+        });
+
+        // Sidebar toggle functionality
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+
+        if (sidebarToggle && sidebar && mainContent) {
+            // Apply saved state from localStorage immediately
+            const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (sidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('sidebar-collapsed');
+                sidebarToggle.classList.add('collapsed');
+            }
+
+            // Remove loading class to enable transitions
+            document.body.classList.remove('sidebar-loading');
+
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('sidebar-collapsed');
+                sidebarToggle.classList.toggle('collapsed');
+
+                // Save state to localStorage
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+            });
+        }
+    });
+    </script>
+</body>
+</html>

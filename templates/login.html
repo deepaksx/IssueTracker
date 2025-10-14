@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Login - EFI IT Issue Tracker{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="logo">
+            <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <h2>EFI IT Issue Tracker</h2>
+        <p class="text-center text-muted mb-4">Sign in to continue</p>
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username"
+                       placeholder="Enter username" required autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password"
+                       placeholder="Enter password" required>
+            </div>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </button>
+            </div>
+        </form>
+
+        <div class="alert alert-info">
+            <small>
+                <strong>Default Credentials:</strong><br>
+                Admin: <code>admin / admin123</code><br>
+                Viewer: <code>viewer / viewer123</code>
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
