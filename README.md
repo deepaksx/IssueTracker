@@ -275,9 +275,31 @@ pip install -r requirements.txt
 
 🚀 **Ready to deploy as a web application!**
 
-This application is production-ready and can be deployed to any cloud platform. See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment guides.
+This application can be deployed in two ways:
 
-### Quick Deploy Options
+### 1. Internal Company Network (Recommended for Organizations)
+
+Deploy on your company's internal network for secure, private access.
+
+**Best for:**
+- Corporate/organizational use
+- Internal IT teams
+- On-premise requirements
+- Complete control over data
+
+📘 **[Complete Internal Network Deployment Guide →](INTERNAL_DEPLOYMENT.md)**
+
+**Quick Start for Internal Network:**
+1. Set up Windows Server or dedicated PC
+2. Run `install_windows_service.bat` as Administrator
+3. Configure firewall (port 8000)
+4. Share URL with employees: `http://server-ip:8000`
+
+### 2. Cloud Platform Deployment
+
+Deploy to public cloud platforms for internet-accessible service.
+
+**Quick Deploy Options:**
 
 1. **Render.com** (Recommended - Free tier available)
    - Automatic deployments from GitHub
