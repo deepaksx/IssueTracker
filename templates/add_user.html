@@ -39,12 +39,36 @@
                         <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
                         <select class="form-select" id="role" name="role" required>
                             <option value="viewer" selected>Viewer (Read-only access)</option>
+                            <option value="hod">HOD (Head of Department)</option>
                             <option value="admin">Admin (Full access)</option>
                         </select>
                         <small class="form-text text-muted">
                             <strong>Admin:</strong> Can create, edit, delete issues and manage users<br>
-                            <strong>Viewer:</strong> Can only view issues and reports
+                            <strong>HOD:</strong> Can create, edit, view issues within their company/department<br>
+                            <strong>Viewer:</strong> Can only view issues within their company/department
                         </small>
+                    </div>
+
+                    <div class="mb-3" id="company-field">
+                        <label for="company" class="form-label">Company <span class="text-danger" id="company-required">*</span></label>
+                        <select class="form-select" id="company" name="company">
+                            <option value="">-- Select Company --</option>
+                            {% for company in companies %}
+                            <option value="{{ company.name }}">{{ company.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">Required for HOD and Viewer roles</small>
+                    </div>
+
+                    <div class="mb-3" id="department-field">
+                        <label for="department" class="form-label">Department <span class="text-danger" id="department-required">*</span></label>
+                        <select class="form-select" id="department" name="department">
+                            <option value="">-- Select Department --</option>
+                            {% for department in departments %}
+                            <option value="{{ department.name }}">{{ department.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">Required for HOD and Viewer roles</small>
                     </div>
 
                     <div class="d-flex justify-content-between">
@@ -60,4 +84,39 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Show/hide company and department fields based on role selection
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelect = document.getElementById('role');
+        const companyField = document.getElementById('company-field');
+        const departmentField = document.getElementById('department-field');
+        const companySelect = document.getElementById('company');
+        const departmentSelect = document.getElementById('department');
+
+        function toggleCompanyDepartmentFields() {
+            const role = roleSelect.value;
+
+            if (role === 'admin') {
+                // Hide and make optional for admin
+                companyField.style.display = 'none';
+                departmentField.style.display = 'none';
+                companySelect.removeAttribute('required');
+                departmentSelect.removeAttribute('required');
+            } else {
+                // Show and make required for HOD and Viewer
+                companyField.style.display = 'block';
+                departmentField.style.display = 'block';
+                companySelect.setAttribute('required', 'required');
+                departmentSelect.setAttribute('required', 'required');
+            }
+        }
+
+        // Initial state
+        toggleCompanyDepartmentFields();
+
+        // Listen for role changes
+        roleSelect.addEventListener('change', toggleCompanyDepartmentFields);
+    });
+</script>
 {% endblock %}

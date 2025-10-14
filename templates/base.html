@@ -2,15 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#5B8DEF">
     <title>{% block title %}EFI IT Issue Tracker{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script>
-        // Apply sidebar state immediately to prevent flash
+        // Apply sidebar state immediately to prevent flash (desktop only)
         (function() {
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            if (window.innerWidth > 1024 && localStorage.getItem('sidebarCollapsed') === 'true') {
                 document.documentElement.classList.add('sidebar-collapsed');
             }
         })();
@@ -39,7 +43,7 @@
                                 <span>Dashboard</span>
                             </a>
                         </li>
-                        {% if current_user.is_admin() %}
+                        {% if current_user.is_admin() or current_user.is_hod() %}
                         <li class="sidebar-menu-item">
                             <a href="{{ url_for('add_issue') }}" class="sidebar-menu-link {% if request.endpoint == 'add_issue' %}active{% endif %}">
                                 <i class="bi bi-plus-circle"></i>
@@ -50,6 +54,7 @@
                     </ul>
                 </div>
 
+                {% if current_user.is_admin() %}
                 <div class="sidebar-section">
                     <div class="sidebar-section-title">Management</div>
                     <ul class="sidebar-menu">
@@ -59,7 +64,6 @@
                                 <span>Audit Log</span>
                             </a>
                         </li>
-                        {% if current_user.is_admin() %}
                         <li class="sidebar-menu-item">
                             <a href="{{ url_for('manage_users') }}" class="sidebar-menu-link {% if request.endpoint == 'manage_users' %}active{% endif %}">
                                 <i class="bi bi-people"></i>
@@ -84,9 +88,15 @@
                                 <span>Applications</span>
                             </a>
                         </li>
-                        {% endif %}
+                        <li class="sidebar-menu-item">
+                            <a href="{{ url_for('manage_database') }}" class="sidebar-menu-link {% if request.endpoint == 'manage_database' %}active{% endif %}">
+                                <i class="bi bi-database"></i>
+                                <span>Database</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
+                {% endif %}
             </nav>
 
             <!-- Sidebar Footer with User Info -->
@@ -189,25 +199,72 @@
         const mainContent = document.querySelector('.main-content');
 
         if (sidebarToggle && sidebar && mainContent) {
-            // Apply saved state from localStorage immediately
-            const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (sidebarCollapsed) {
-                sidebar.classList.add('collapsed');
-                mainContent.classList.add('sidebar-collapsed');
-                sidebarToggle.classList.add('collapsed');
+            // Check if we're on mobile
+            const isMobile = () => window.innerWidth <= 1024;
+
+            // Apply saved state from localStorage (only on desktop)
+            if (!isMobile()) {
+                const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                if (sidebarCollapsed) {
+                    sidebar.classList.add('collapsed');
+                    mainContent.classList.add('sidebar-collapsed');
+                    sidebarToggle.classList.add('collapsed');
+                }
             }
 
             // Remove loading class to enable transitions
             document.body.classList.remove('sidebar-loading');
 
             sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('collapsed');
-                mainContent.classList.toggle('sidebar-collapsed');
-                sidebarToggle.classList.toggle('collapsed');
+                if (isMobile()) {
+                    // Mobile behavior: toggle open class and body overlay
+                    sidebar.classList.toggle('open');
+                    document.body.classList.toggle('sidebar-open');
+                } else {
+                    // Desktop behavior: collapse sidebar
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('sidebar-collapsed');
+                    sidebarToggle.classList.toggle('collapsed');
 
-                // Save state to localStorage
-                const isCollapsed = sidebar.classList.contains('collapsed');
-                localStorage.setItem('sidebarCollapsed', isCollapsed);
+                    // Save state to localStorage
+                    const isCollapsed = sidebar.classList.contains('collapsed');
+                    localStorage.setItem('sidebarCollapsed', isCollapsed);
+                }
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (isMobile() && sidebar.classList.contains('open')) {
+                    if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                        document.body.classList.remove('sidebar-open');
+                    }
+                }
+            });
+
+            // Handle window resize
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    if (isMobile()) {
+                        // Switching to mobile: remove desktop classes
+                        sidebar.classList.remove('collapsed');
+                        mainContent.classList.remove('sidebar-collapsed');
+                        sidebarToggle.classList.remove('collapsed');
+                    } else {
+                        // Switching to desktop: remove mobile classes and restore saved state
+                        sidebar.classList.remove('open');
+                        document.body.classList.remove('sidebar-open');
+
+                        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                        if (sidebarCollapsed) {
+                            sidebar.classList.add('collapsed');
+                            mainContent.classList.add('sidebar-collapsed');
+                            sidebarToggle.classList.add('collapsed');
+                        }
+                    }
+                }, 250);
             });
         }
     });

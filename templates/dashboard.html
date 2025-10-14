@@ -29,7 +29,7 @@
         <a href="{{ url_for('export_csv') }}" class="btn btn-success">
             <i class="bi bi-download"></i> Export CSV
         </a>
-        {% if current_user.is_admin() %}
+        {% if current_user.is_admin() or current_user.is_hod() %}
         <a href="{{ url_for('add_issue') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Add Issue
         </a>
@@ -46,20 +46,28 @@
         </div>
         <div class="col-md-1">
             <label class="form-label form-label-sm">Company</label>
-            <select class="form-select form-select-sm" name="company" onchange="this.form.submit()">
+            <select class="form-select form-select-sm" name="company" onchange="this.form.submit()" {% if current_user.is_hod() or current_user.is_viewer() %}disabled{% endif %}>
+                {% if current_user.is_hod() or current_user.is_viewer() %}
+                <option value="{{ current_user.company }}" selected>{{ current_user.company }}</option>
+                {% else %}
                 <option value="">All</option>
                 {% for company in companies %}
                 <option value="{{ company.name }}" {% if company_filter == company.name %}selected{% endif %}>{{ company.name }}</option>
                 {% endfor %}
+                {% endif %}
             </select>
         </div>
         <div class="col-md-1">
             <label class="form-label form-label-sm">Department</label>
-            <select class="form-select form-select-sm" name="department" onchange="this.form.submit()">
+            <select class="form-select form-select-sm" name="department" onchange="this.form.submit()" {% if current_user.is_hod() or current_user.is_viewer() %}disabled{% endif %}>
+                {% if current_user.is_hod() or current_user.is_viewer() %}
+                <option value="{{ current_user.department }}" selected>{{ current_user.department }}</option>
+                {% else %}
                 <option value="">All</option>
                 {% for dept in departments %}
                 <option value="{{ dept.name }}" {% if department_filter == dept.name %}selected{% endif %}>{{ dept.name }}</option>
                 {% endfor %}
+                {% endif %}
             </select>
         </div>
         <div class="col-md-1">
@@ -201,7 +209,7 @@
                                     <a href="{{ url_for('view_issue', issue_id=issue.id) }}" class="btn btn-sm btn-secondary btn-icon" title="View">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    {% if current_user.is_admin() %}
+                                    {% if current_user.is_admin() or current_user.is_hod() %}
                                     <a href="{{ url_for('edit_issue', issue_id=issue.id) }}" class="btn btn-sm btn-warning btn-icon" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>

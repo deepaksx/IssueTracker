@@ -23,6 +23,8 @@
                         <th>ID</th>
                         <th>Username</th>
                         <th>Role</th>
+                        <th>Company</th>
+                        <th>Department</th>
                         <th>Created At</th>
                         <th>Actions</th>
                     </tr>
@@ -41,10 +43,14 @@
                             <td>
                                 {% if user.role == 'admin' %}
                                     <span class="badge bg-danger">Admin</span>
+                                {% elif user.role == 'hod' %}
+                                    <span class="badge bg-warning">HOD</span>
                                 {% else %}
                                     <span class="badge bg-secondary">Viewer</span>
                                 {% endif %}
                             </td>
+                            <td>{{ user.company or '-' }}</td>
+                            <td>{{ user.department or '-' }}</td>
                             <td>{{ user.created_at | datetime_format }}</td>
                             <td>
                                 <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-sm btn-warning" title="Edit">
@@ -83,7 +89,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">
+                            <td colspan="7" class="text-center text-muted py-4">
                                 <i class="bi bi-people" style="font-size: 3rem;"></i>
                                 <p class="mt-2">No users found</p>
                             </td>
@@ -100,7 +106,8 @@
         <i class="bi bi-info-circle"></i>
         <strong>User Roles:</strong><br>
         <strong>Admin:</strong> Full access - can create, edit, delete issues and manage users<br>
-        <strong>Viewer:</strong> Read-only access - can only view issues and reports
+        <strong>HOD:</strong> Can create, edit, and view issues within their company/department<br>
+        <strong>Viewer:</strong> Read-only access - can only view issues within their company/department
     </div>
 </div>
 {% endblock %}

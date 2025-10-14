@@ -25,28 +25,48 @@
 
                     <div class="mb-3">
                         <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="description" name="description" rows="5" required>{{ issue.description }}</textarea>
+                        <textarea class="form-control" id="description" name="description" rows="5" required>{% if '--- EDIT HISTORY ---' in issue.description %}{{ issue.description.split('--- EDIT HISTORY ---')[0].strip() }}{% else %}{{ issue.description }}{% endif %}</textarea>
+                        <small class="form-text text-muted">Edit the description above. Previous edit history is preserved below.</small>
                     </div>
+
+                    {% if '--- EDIT HISTORY ---' in issue.description %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Edit History (Read-Only)</label>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <pre class="mb-0" style="white-space: pre-wrap; font-size: 0.875rem; color: #6c757d;">{{ issue.description.split('--- EDIT HISTORY ---')[1] }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="company" class="form-label">Company</label>
-                            <select class="form-select" id="company" name="company">
+                            <select class="form-select" id="company" name="company" {% if current_user.is_hod() %}disabled{% endif %}>
                                 <option value="">-- Select Company --</option>
                                 {% for company in companies %}
                                 <option value="{{ company.name }}" {% if issue.company == company.name %}selected{% endif %}>{{ company.name }}</option>
                                 {% endfor %}
                             </select>
+                            {% if current_user.is_hod() %}
+                            <input type="hidden" name="company" value="{{ current_user.company }}">
+                            <small class="form-text text-muted">Cannot change company</small>
+                            {% endif %}
                         </div>
 
                         <div class="col-md-4 mb-3">
                             <label for="department" class="form-label">Department</label>
-                            <select class="form-select" id="department" name="department">
+                            <select class="form-select" id="department" name="department" {% if current_user.is_hod() %}disabled{% endif %}>
                                 <option value="">-- Select Department --</option>
                                 {% for dept in departments %}
                                 <option value="{{ dept.name }}" {% if issue.department == dept.name %}selected{% endif %}>{{ dept.name }}</option>
                                 {% endfor %}
                             </select>
+                            {% if current_user.is_hod() %}
+                            <input type="hidden" name="department" value="{{ current_user.department }}">
+                            <small class="form-text text-muted">Cannot change department</small>
+                            {% endif %}
                         </div>
 
                         <div class="col-md-4 mb-3">

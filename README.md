@@ -1,18 +1,40 @@
 # IT Issue Tracker
 
+**Version 2.0.0**
+
 A secure, browser-based web application for managing IT issues with role-based access control and comprehensive audit logging.
+
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](VERSION)
+[![Python](https://img.shields.io/badge/python-3.8+-green.svg)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/flask-3.0.0-orange.svg)](https://flask.palletsprojects.com/)
+
+## What's New in Version 2.0.0
+
+### Major Features
+- **Enhanced RBAC System**: Three-tier role system (Admin, HOD, Viewer) with company/department-based access control
+- **Database Management**: Complete backup/restore system with ZIP archives (includes all data and PDF files)
+- **Edit History Tracking**: Full text preservation of all issue description changes with timestamps
+- **Document Management**: PDF upload, viewing, and download with mobile optimization
+- **Organization Management**: Companies, Departments, and Applications management
+- **UX Improvements**: Enhanced sidebar, auto-submit filters, and smooth transitions
+
+📖 **[View Full Changelog](CHANGELOG.md)**
 
 ## Features
 
 - **User Authentication**: Secure login with username/password
-- **Role-Based Access Control**:
-  - Admin users: Can create, edit, and delete issues
-  - Viewer users: Can view issues and reports (read-only)
+- **Role-Based Access Control (RBAC)**:
+  - **Admin**: Full access to all features and data
+  - **HOD (Head of Department)**: Can create/edit issues within their company/department
+  - **Viewer**: Read-only access within their company/department
 - **Issue Management**: Track IT issues with comprehensive details
 - **Audit Logging**: Complete change history for all issues with immutable logs
+- **Edit History**: Full text preservation of description changes
+- **Document Management**: Upload, view, and download PDF attachments
+- **Database Backup & Restore**: Complete backup system with ZIP archives
 - **Filtering & Search**: Filter by status, priority, category, company, department, and search by keywords
 - **CSV Export**: Export all issues to CSV format
-- **Responsive Design**: Works on desktop and tablet devices
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
 
 ## Technology Stack
 

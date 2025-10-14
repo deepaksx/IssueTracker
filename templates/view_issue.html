@@ -21,9 +21,13 @@
                 <span class="badge bg-light text-dark">{{ audit_logs|length }}</span>
                 {% endif %}
             </button>
+            {% endif %}
+            {% if current_user.is_admin() or current_user.is_hod() %}
             <a href="{{ url_for('edit_issue', issue_id=issue.id) }}" class="btn btn-warning">
                 <i class="bi bi-pencil"></i> Edit
             </a>
+            {% endif %}
+            {% if current_user.is_admin() %}
             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
                 <i class="bi bi-trash"></i> Delete
             </button>
@@ -107,7 +111,31 @@
                 <i class="bi bi-card-text"></i> Description
             </div>
             <div class="card-body">
-                <p class="issue-description">{{ issue.description }}</p>
+                {% if '--- EDIT HISTORY ---' in issue.description %}
+                    {% set desc_parts = issue.description.split('--- EDIT HISTORY ---') %}
+                    <p class="issue-description" style="white-space: pre-wrap;">{{ desc_parts[0].strip() }}</p>
+
+                    <hr class="my-3">
+
+                    <div class="edit-history-section">
+                        <h6 class="text-muted mb-3"><i class="bi bi-clock-history"></i> Edit History</h6>
+                        {% set history_entries = desc_parts[1].split('--- Edit by ') %}
+                        {% for entry in history_entries %}
+                            {% if entry.strip() %}
+                                <div class="card bg-light mb-2">
+                                    <div class="card-body">
+                                        <div style="font-size: 0.875rem;">
+                                            <strong class="text-primary">Edit by {{ entry.split(' ---')[0] }}</strong>
+                                            <div class="mt-2" style="color: #6c757d; white-space: pre-wrap;">{{ entry.split('Previous text: ')[1] if 'Previous text: ' in entry else entry.split('\n', 1)[1] if '\n' in entry else '' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="issue-description" style="white-space: pre-wrap;">{{ issue.description }}</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -153,7 +181,7 @@
                             <a href="{{ url_for('download_document', document_id=doc.id) }}" class="btn btn-sm btn-secondary btn-icon" title="Download">
                                 <i class="bi bi-download"></i>
                             </a>
-                            {% if current_user.is_admin() %}
+                            {% if current_user.is_admin() or current_user.is_hod() %}
                             <button type="button" class="btn btn-sm btn-danger btn-icon" data-bs-toggle="modal" data-bs-target="#deleteDocModal{{ doc.id }}" title="Delete">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -162,7 +190,7 @@
                     </div>
 
                     <!-- Delete Document Modal -->
-                    {% if current_user.is_admin() %}
+                    {% if current_user.is_admin() or current_user.is_hod() %}
                     <div class="modal fade" id="deleteDocModal{{ doc.id }}" tabindex="-1">
                         <div class="modal-dialog">
                             <div class="modal-content">
@@ -318,21 +346,26 @@
 
 <script>
 function openPdfViewer(documentId, filename) {
-    // Set the PDF filename in modal title
-    document.getElementById('pdfFileName').textContent = filename;
-
-    // Set iframe source to view PDF
     const viewUrl = "{{ url_for('view_document', document_id=0) }}".replace('0', documentId);
-    document.getElementById('pdfIframe').src = viewUrl;
 
-    // Set download link
-    const downloadUrl = "{{ url_for('download_document', document_id=0) }}".replace('0', documentId);
-    document.getElementById('pdfDownloadLink').href = downloadUrl;
-    document.getElementById('pdfDownloadLink').download = filename;
+    // Check if mobile device
+    const isMobile = window.innerWidth <= 768;
 
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('pdfViewerModal'));
-    modal.show();
+    if (isMobile) {
+        // On mobile: Open PDF in new tab for better viewing experience
+        window.open(viewUrl, '_blank');
+    } else {
+        // On desktop: Show modal with iframe
+        document.getElementById('pdfFileName').textContent = filename;
+        document.getElementById('pdfIframe').src = viewUrl;
+
+        const downloadUrl = "{{ url_for('download_document', document_id=0) }}".replace('0', documentId);
+        document.getElementById('pdfDownloadLink').href = downloadUrl;
+        document.getElementById('pdfDownloadLink').download = filename;
+
+        const modal = new bootstrap.Modal(document.getElementById('pdfViewerModal'));
+        modal.show();
+    }
 }
 
 // Clear iframe when modal is closed to stop loading

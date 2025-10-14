@@ -43,9 +43,34 @@ class FlaskUser(UserMixin):
         self.id = user_data['id']
         self.username = user_data['username']
         self.role = user_data['role']
+        self.company = user_data.get('company')
+        self.department = user_data.get('department')
 
     def is_admin(self):
         return self.role == 'admin'
+
+    def is_hod(self):
+        return self.role == 'hod'
+
+    def is_viewer(self):
+        return self.role == 'viewer'
+
+    def can_create_issues(self):
+        """Check if user can create issues"""
+        return self.role in ['admin', 'hod']
+
+    def can_edit_issues(self):
+        """Check if user can edit issues"""
+        return self.role in ['admin', 'hod']
+
+    def can_access_issue(self, issue):
+        """Check if user can access a specific issue"""
+        if self.is_admin():
+            return True
+        # HOD and Viewer can only access issues in their company/department
+        if issue['company'] != self.company or issue['department'] != self.department:
+            return False
+        return True
 
 
 @login_manager.user_loader
@@ -63,6 +88,17 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin():
             flash('You need admin privileges to access this page.', 'danger')
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def hod_or_admin_required(f):
+    """Decorator to require HOD or admin role"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not (current_user.is_admin() or current_user.is_hod()):
+            flash('You need HOD or admin privileges to access this page.', 'danger')
             return redirect(url_for('dashboard'))
         return f(*args, **kwargs)
     return decorated_function
@@ -135,8 +171,16 @@ def dashboard():
     application_filter = request.args.get('application', '')
     search_query = request.args.get('search', '')
 
-    # Get all issues
-    issues = Issue.get_all()
+    # Get issues based on user role
+    if current_user.is_admin():
+        # Admin sees all issues
+        issues = Issue.get_all()
+    else:
+        # HOD and Viewer only see issues from their company/department
+        issues = Issue.get_all(
+            company=current_user.company,
+            department=current_user.department
+        )
 
     # Apply filters
     if status_filter:
@@ -181,9 +225,9 @@ def dashboard():
 
 @app.route('/issue/add', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@hod_or_admin_required
 def add_issue():
-    """Add new issue (admin only)"""
+    """Add new issue (HOD or admin)"""
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
@@ -192,6 +236,11 @@ def add_issue():
         application = request.form.get('application')
         category = request.form.get('category')
         priority = request.form.get('priority')
+
+        # For HOD, force their company/department
+        if current_user.is_hod():
+            company = current_user.company
+            department = current_user.department
 
         # Validation
         if not title or not description:
@@ -231,8 +280,13 @@ def view_issue(issue_id):
         flash('Issue not found.', 'danger')
         return redirect(url_for('dashboard'))
 
-    # Get audit log for this issue
-    audit_logs = AuditLog.get_by_issue(issue_id)
+    # Check if user can access this issue
+    if not current_user.can_access_issue(issue):
+        flash('You do not have permission to view this issue.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Get audit log for this issue (only for admin)
+    audit_logs = AuditLog.get_by_issue(issue_id) if current_user.is_admin() else []
 
     # Get documents for this issue
     documents = Document.get_by_issue(issue_id)
@@ -242,18 +296,56 @@ def view_issue(issue_id):
 
 @app.route('/issue/<int:issue_id>/edit', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@hod_or_admin_required
 def edit_issue(issue_id):
-    """Edit issue (admin only)"""
+    """Edit issue (HOD or admin)"""
     issue = Issue.get_by_id(issue_id)
     if not issue:
         flash('Issue not found.', 'danger')
         return redirect(url_for('dashboard'))
 
+    # Check if user can access this issue
+    if not current_user.can_access_issue(issue):
+        flash('You do not have permission to edit this issue.', 'danger')
+        return redirect(url_for('dashboard'))
+
     if request.method == 'POST':
+        from datetime import datetime
+
+        new_description = request.form.get('description')
+        old_description = issue['description']
+
+        # Extract existing edit history (everything after first "--- EDIT HISTORY ---")
+        history_marker = "--- EDIT HISTORY ---"
+        if history_marker in old_description:
+            # Split old description to get the old editable text and existing history
+            parts = old_description.split(history_marker, 1)
+            old_editable_text = parts[0].strip()
+            existing_history = parts[1]  # Keep existing history entries
+        else:
+            # First edit - no history yet
+            old_editable_text = old_description.strip()
+            existing_history = ""
+
+        # Add new edit entry to history with the previous text
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # Build new history entry with the old text
+        if existing_history:
+            # Append to existing history
+            new_history = existing_history + f"\n\n--- Edit by {current_user.username} on {timestamp} ---\nPrevious text: {old_editable_text}"
+        else:
+            # First edit - create history section
+            new_history = f"\n--- Edit by {current_user.username} on {timestamp} ---\nPrevious text: {old_editable_text}"
+
+        # Build the final description:
+        # 1. New content (user's editable text)
+        # 2. Edit history section (preserved with old text)
+        description_with_history = new_description.strip() + "\n\n" + history_marker + new_history
+
         updates = {
             'title': request.form.get('title'),
-            'description': request.form.get('description'),
+            'description': description_with_history,
             'company': request.form.get('company') if request.form.get('company') else None,
             'department': request.form.get('department') if request.form.get('department') else None,
             'application': request.form.get('application') if request.form.get('application') else None,
@@ -261,6 +353,11 @@ def edit_issue(issue_id):
             'priority': request.form.get('priority'),
             'status': request.form.get('status')
         }
+
+        # For HOD, don't allow changing company/department
+        if current_user.is_hod():
+            updates['company'] = current_user.company
+            updates['department'] = current_user.department
 
         Issue.update(issue_id, current_user.username, updates)
         flash(f'Issue #{issue_id} updated successfully!', 'success')
@@ -316,6 +413,8 @@ def add_user():
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         role = request.form.get('role')
+        company = request.form.get('company') if request.form.get('company') else None
+        department = request.form.get('department') if request.form.get('department') else None
 
         # Validation
         if not username or not password:
@@ -330,7 +429,18 @@ def add_user():
             flash('Password must be at least 6 characters long.', 'danger')
             return redirect(url_for('add_user'))
 
-        user_id = User.create(username=username, password=password, role=role)
+        # Validate that HOD and Viewer have company/department
+        if role in ['hod', 'viewer'] and (not company or not department):
+            flash('Company and department are required for HOD and Viewer roles.', 'danger')
+            return redirect(url_for('add_user'))
+
+        user_id = User.create(
+            username=username,
+            password=password,
+            role=role,
+            company=company,
+            department=department
+        )
 
         if user_id:
             flash(f'User "{username}" created successfully!', 'success')
@@ -339,7 +449,11 @@ def add_user():
             flash(f'Username "{username}" already exists.', 'danger')
             return redirect(url_for('add_user'))
 
-    return render_template('add_user.html')
+    # Get available options for dropdowns
+    companies = Company.get_all()
+    departments = Department.get_all()
+
+    return render_template('add_user.html', companies=companies, departments=departments)
 
 
 @app.route('/user/<int:user_id>/edit', methods=['GET', 'POST'])
@@ -357,6 +471,8 @@ def edit_user(user_id):
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         role = request.form.get('role')
+        company = request.form.get('company') if request.form.get('company') else None
+        department = request.form.get('department') if request.form.get('department') else None
 
         # Validation
         if password and password != confirm_password:
@@ -367,22 +483,38 @@ def edit_user(user_id):
             flash('Password must be at least 6 characters long.', 'danger')
             return redirect(url_for('edit_user', user_id=user_id))
 
+        # Validate that HOD and Viewer have company/department
+        if role in ['hod', 'viewer'] and (not company or not department):
+            flash('Company and department are required for HOD and Viewer roles.', 'danger')
+            return redirect(url_for('edit_user', user_id=user_id))
+
         # Update user
         success = User.update(
             user_id=user_id,
             username=username if username != user['username'] else None,
             password=password if password else None,
-            role=role if role != user['role'] else None
+            role=role if role != user['role'] else None,
+            company=company,
+            department=department
         )
 
-        if success or (username == user['username'] and not password and role == user['role']):
+        if success or (username == user['username'] and not password and
+                       role == user['role'] and company == user.get('company') and
+                       department == user.get('department')):
             flash(f'User "{username}" updated successfully!', 'success')
             return redirect(url_for('manage_users'))
         else:
             flash(f'Failed to update user. Username may already exist.', 'danger')
             return redirect(url_for('edit_user', user_id=user_id))
 
-    return render_template('edit_user.html', user=user)
+    # Get available options for dropdowns
+    companies = Company.get_all()
+    departments = Department.get_all()
+
+    return render_template('edit_user.html',
+                           user=user,
+                           companies=companies,
+                           departments=departments)
 
 
 @app.route('/user/<int:user_id>/delete', methods=['POST'])
@@ -409,7 +541,14 @@ def delete_user(user_id):
 @login_required
 def export_csv():
     """Export issues to CSV"""
-    issues = Issue.get_all()
+    # Get issues based on user role
+    if current_user.is_admin():
+        issues = Issue.get_all()
+    else:
+        issues = Issue.get_all(
+            company=current_user.company,
+            department=current_user.department
+        )
 
     # Create CSV in memory
     si = StringIO()
@@ -700,6 +839,213 @@ def delete_application(application_id):
     return redirect(url_for('manage_applications'))
 
 
+@app.route('/database')
+@login_required
+@admin_required
+def manage_database():
+    """Database management page (admin only)"""
+    import sqlite3
+
+    # Get database statistics
+    conn = sqlite3.connect('issue_tracker.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) FROM documents')
+    doc_count = cursor.fetchone()[0]
+    conn.close()
+
+    stats = {
+        'issues': len(Issue.get_all()),
+        'users': len(User.get_all()),
+        'companies': len(Company.get_all()),
+        'documents': doc_count
+    }
+    return render_template('manage_database.html', stats=stats)
+
+
+@app.route('/admin/database-backup')
+@login_required
+@admin_required
+def database_backup():
+    """Backup database and uploads to ZIP file (admin only)"""
+    from datetime import datetime
+    import shutil
+    import zipfile
+
+    # Create backups directory if it doesn't exist
+    backup_dir = os.path.join(os.path.dirname(__file__), 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+
+    # Generate backup filename with timestamp
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_filename = f'issue_tracker_backup_{timestamp}.zip'
+    backup_path = os.path.join(backup_dir, backup_filename)
+
+    # Create ZIP archive
+    with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # Add database file
+        db_path = 'issue_tracker.db'
+        if os.path.exists(db_path):
+            zipf.write(db_path, 'issue_tracker.db')
+
+        # Add all files from uploads folder
+        uploads_dir = app.config['UPLOAD_FOLDER']
+        if os.path.exists(uploads_dir):
+            for root, dirs, files in os.walk(uploads_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    # Store with relative path from uploads folder
+                    arcname = os.path.join('uploads', os.path.relpath(file_path, uploads_dir))
+                    zipf.write(file_path, arcname)
+
+    # Send the backup ZIP file to user
+    return send_file(
+        backup_path,
+        as_attachment=True,
+        download_name=backup_filename,
+        mimetype='application/zip'
+    )
+
+
+@app.route('/admin/database-restore', methods=['POST'])
+@login_required
+@admin_required
+def database_restore():
+    """Restore database and uploads from ZIP backup file (admin only)"""
+    if 'backup_file' not in request.files:
+        flash('No backup file selected.', 'danger')
+        return redirect(url_for('manage_database'))
+
+    file = request.files['backup_file']
+
+    if file.filename == '':
+        flash('No backup file selected.', 'danger')
+        return redirect(url_for('manage_database'))
+
+    # Check if it's a .zip file
+    if not file.filename.endswith('.zip'):
+        flash('Invalid file type. Please upload a .zip backup file.', 'danger')
+        return redirect(url_for('manage_database'))
+
+    try:
+        from datetime import datetime
+        import shutil
+        import zipfile
+        import tempfile
+
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_dir = os.path.join(os.path.dirname(__file__), 'backups')
+        os.makedirs(backup_dir, exist_ok=True)
+
+        # Create backup of current database and uploads before restoring
+        current_backup_filename = f'issue_tracker_pre_restore_{timestamp}.zip'
+        current_backup_path = os.path.join(backup_dir, current_backup_filename)
+
+        # Backup current state to ZIP
+        with zipfile.ZipFile(current_backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            db_path = 'issue_tracker.db'
+            if os.path.exists(db_path):
+                zipf.write(db_path, 'issue_tracker.db')
+
+            uploads_dir = app.config['UPLOAD_FOLDER']
+            if os.path.exists(uploads_dir):
+                for root, dirs, files in os.walk(uploads_dir):
+                    for filename in files:
+                        file_path = os.path.join(root, filename)
+                        arcname = os.path.join('uploads', os.path.relpath(file_path, uploads_dir))
+                        zipf.write(file_path, arcname)
+
+        # Save uploaded file to temporary location
+        temp_zip_path = os.path.join(tempfile.gettempdir(), f'restore_{timestamp}.zip')
+        file.save(temp_zip_path)
+
+        # Extract the backup ZIP
+        with zipfile.ZipFile(temp_zip_path, 'r') as zipf:
+            # Check if database file exists in ZIP
+            if 'issue_tracker.db' not in zipf.namelist():
+                os.remove(temp_zip_path)
+                flash('Invalid backup file: database not found in archive.', 'danger')
+                return redirect(url_for('manage_database'))
+
+            # Delete current database
+            db_path = 'issue_tracker.db'
+            if os.path.exists(db_path):
+                os.remove(db_path)
+
+            # Extract database
+            zipf.extract('issue_tracker.db', os.path.dirname(__file__))
+
+            # Clear and restore uploads folder
+            uploads_dir = app.config['UPLOAD_FOLDER']
+            if os.path.exists(uploads_dir):
+                shutil.rmtree(uploads_dir)
+            os.makedirs(uploads_dir, exist_ok=True)
+
+            # Extract all files from uploads folder in the ZIP
+            for member in zipf.namelist():
+                if member.startswith('uploads/') and member != 'uploads/':
+                    # Extract to correct location
+                    target_path = os.path.join(os.path.dirname(__file__), member)
+                    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                    with zipf.open(member) as source, open(target_path, 'wb') as target:
+                        shutil.copyfileobj(source, target)
+
+        # Clean up temporary file
+        os.remove(temp_zip_path)
+
+        flash(f'Database and uploads restored successfully! Previous state backed up to: {current_backup_filename}', 'success')
+        flash('Please log in again.', 'info')
+
+        # Log out the user since the database was restored
+        logout_user()
+        return redirect(url_for('login'))
+
+    except Exception as e:
+        flash(f'Error restoring database: {str(e)}', 'danger')
+        return redirect(url_for('manage_database'))
+
+
+@app.route('/admin/database-init', methods=['POST'])
+@login_required
+@admin_required
+def database_init():
+    """Re-initialize database (admin only) - WARNING: This deletes all data!"""
+    confirmation = request.form.get('confirmation')
+
+    if confirmation != 'RESET DATABASE':
+        flash('Invalid confirmation. Please type "RESET DATABASE" exactly to confirm.', 'danger')
+        return redirect(url_for('manage_database'))
+
+    try:
+        # Close existing database connections
+        db_path = 'issue_tracker.db'
+
+        # Backup before deleting
+        from datetime import datetime
+        import shutil
+        backup_dir = os.path.join(os.path.dirname(__file__), 'backups')
+        os.makedirs(backup_dir, exist_ok=True)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_path = os.path.join(backup_dir, f'issue_tracker_pre_reset_{timestamp}.db')
+
+        if os.path.exists(db_path):
+            shutil.copy2(db_path, backup_path)
+            os.remove(db_path)
+
+        # Reinitialize database
+        db.init_db()
+
+        flash(f'Database reset successfully! A backup was created at: {backup_path}', 'warning')
+        flash('Please log in again with the default admin account.', 'info')
+
+        # Log out the user since the database was reset
+        logout_user()
+        return redirect(url_for('login'))
+
+    except Exception as e:
+        flash(f'Error resetting database: {str(e)}', 'danger')
+        return redirect(url_for('manage_database'))
+
+
 @app.template_filter('datetime_format')
 def datetime_format(value):
     """Format datetime for display"""
@@ -724,12 +1070,27 @@ if __name__ == '__main__':
     # Make sure database is initialized
     db.init_db()
 
+    # Get local IP address
+    import socket
+    try:
+        # Get the local IP address
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+    except:
+        local_ip = "Unable to detect"
+
     # Run the application
     print("\n" + "="*60)
     print("EFI IT Issue Tracker Application")
     print("="*60)
-    print("Starting server at http://127.0.0.1:5000")
-    print("Press CTRL+C to stop the server")
+    print("Server is running and accessible at:")
+    print(f"  • Local:   http://127.0.0.1:5000")
+    print(f"  • Network: http://{local_ip}:5000")
+    print("\nOther devices on your network can access using:")
+    print(f"  http://{local_ip}:5000")
+    print("\nPress CTRL+C to stop the server")
     print("="*60 + "\n")
 
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)

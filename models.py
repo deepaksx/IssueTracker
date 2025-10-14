@@ -29,7 +29,9 @@ class Database:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
-                role TEXT NOT NULL CHECK(role IN ('admin', 'viewer')),
+                role TEXT NOT NULL CHECK(role IN ('admin', 'hod', 'viewer')),
+                company TEXT,
+                department TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
@@ -116,7 +118,7 @@ class User:
     """User model"""
 
     @staticmethod
-    def create(username, password, role='viewer', db_path='issue_tracker.db'):
+    def create(username, password, role='viewer', company=None, department=None, db_path='issue_tracker.db'):
         """Create a new user"""
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -124,8 +126,8 @@ class User:
 
         try:
             cursor.execute(
-                'INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)',
-                (username, password_hash, role)
+                'INSERT INTO users (username, password_hash, role, company, department) VALUES (?, ?, ?, ?, ?)',
+                (username, password_hash, role, company, department)
             )
             conn.commit()
             user_id = cursor.lastrowid
@@ -171,13 +173,13 @@ class User:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
-        cursor.execute('SELECT id, username, role, created_at FROM users ORDER BY username')
+        cursor.execute('SELECT id, username, role, company, department, created_at FROM users ORDER BY username')
         users = cursor.fetchall()
         conn.close()
         return [dict(user) for user in users]
 
     @staticmethod
-    def update(user_id, username=None, password=None, role=None, db_path='issue_tracker.db'):
+    def update(user_id, username=None, password=None, role=None, company=None, department=None, db_path='issue_tracker.db'):
         """Update user information"""
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -196,6 +198,14 @@ class User:
         if role:
             update_fields.append('role = ?')
             values.append(role)
+
+        if company is not None:
+            update_fields.append('company = ?')
+            values.append(company)
+
+        if department is not None:
+            update_fields.append('department = ?')
+            values.append(department)
 
         if not update_fields:
             conn.close()
@@ -256,13 +266,30 @@ class Issue:
         return issue_id
 
     @staticmethod
-    def get_all(db_path='issue_tracker.db'):
-        """Get all issues"""
+    def get_all(company=None, department=None, db_path='issue_tracker.db'):
+        """Get all issues, optionally filtered by company and/or department"""
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
-        cursor.execute('SELECT * FROM issues ORDER BY created_at DESC')
+        query = 'SELECT * FROM issues'
+        params = []
+        conditions = []
+
+        if company:
+            conditions.append('company = ?')
+            params.append(company)
+
+        if department:
+            conditions.append('department = ?')
+            params.append(department)
+
+        if conditions:
+            query += ' WHERE ' + ' AND '.join(conditions)
+
+        query += ' ORDER BY created_at DESC'
+
+        cursor.execute(query, params)
         issues = cursor.fetchall()
         conn.close()
         return [dict(issue) for issue in issues]

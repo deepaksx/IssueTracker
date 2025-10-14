@@ -31,22 +31,30 @@
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="company" class="form-label">Company</label>
-                            <select class="form-select" id="company" name="company">
+                            <select class="form-select" id="company" name="company" {% if current_user.is_hod() %}disabled{% endif %}>
                                 <option value="">-- Select Company --</option>
                                 {% for company in companies %}
-                                <option value="{{ company.name }}">{{ company.name }}</option>
+                                <option value="{{ company.name }}" {% if current_user.is_hod() and current_user.company == company.name %}selected{% endif %}>{{ company.name }}</option>
                                 {% endfor %}
                             </select>
+                            {% if current_user.is_hod() %}
+                            <input type="hidden" name="company" value="{{ current_user.company }}">
+                            <small class="form-text text-muted">Auto-assigned to your company</small>
+                            {% endif %}
                         </div>
 
                         <div class="col-md-4 mb-3">
                             <label for="department" class="form-label">Department</label>
-                            <select class="form-select" id="department" name="department">
+                            <select class="form-select" id="department" name="department" {% if current_user.is_hod() %}disabled{% endif %}>
                                 <option value="">-- Select Department --</option>
                                 {% for dept in departments %}
-                                <option value="{{ dept.name }}">{{ dept.name }}</option>
+                                <option value="{{ dept.name }}" {% if current_user.is_hod() and current_user.department == dept.name %}selected{% endif %}>{{ dept.name }}</option>
                                 {% endfor %}
                             </select>
+                            {% if current_user.is_hod() %}
+                            <input type="hidden" name="department" value="{{ current_user.department }}">
+                            <small class="form-text text-muted">Auto-assigned to your department</small>
+                            {% endif %}
                         </div>
 
                         <div class="col-md-4 mb-3">
