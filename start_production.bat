@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 REM EFI IT Issue Tracker - Production Startup Script
 REM This script starts the application in production mode
 
@@ -70,13 +71,13 @@ echo =====================================
 echo.
 
 REM Start with gunicorn (production) or Flask (development fallback)
-gunicorn --bind 0.0.0.0:8000 --workers 4 app:app
+gunicorn --bind 0.0.0.0:8000 --workers 4 app:app 2>nul
 if errorlevel 1 (
     echo.
-    echo Gunicorn not found, starting with Flask development server...
-    echo WARNING: For production use, install gunicorn: pip install gunicorn
+    echo Gunicorn not available, starting with Flask development server...
+    echo (This is fine for testing on your laptop)
     echo.
-    set FLASK_ENV=production
+    set FLASK_ENV=development
     python app.py
 )
 
