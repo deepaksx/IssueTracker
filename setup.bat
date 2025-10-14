@@ -42,11 +42,10 @@ echo Or manually with: python app.py
 echo.
 echo The application will be available at: http://127.0.0.1:5000
 echo.
-echo Default credentials:
-echo   Admin:  username=admin  password=admin123
-echo   Viewer: username=viewer password=viewer123
-echo.
-echo IMPORTANT: Change these passwords before deploying to production!
+echo IMPORTANT SECURITY NOTICE:
+echo Default users have been created with standard credentials.
+echo Please refer to README.md for initial login information.
+echo Change all default passwords immediately after first login!
 echo ============================================================
 echo.
 

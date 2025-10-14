@@ -117,9 +117,9 @@ echo   Restart: nssm restart EFIIssueTracker
 echo   Status:  nssm status EFIIssueTracker
 echo   Logs:    %~dp0logs\service.log
 echo.
-echo Default Login:
-echo   Username: admin
-echo   Password: admin123
-echo   WARNING: Change this password immediately!
+echo IMPORTANT SECURITY NOTICE:
+echo   Default admin credentials have been created.
+echo   Refer to documentation (README.md) for login information.
+echo   WARNING: Change default passwords immediately after first login!
 echo.
 pause

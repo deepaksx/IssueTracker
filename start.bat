@@ -21,9 +21,8 @@ echo Starting Flask server...
 echo.
 echo Application will be available at: http://127.0.0.1:5000
 echo.
-echo Default credentials:
-echo   Admin:  username=admin  password=admin123
-echo   Viewer: username=viewer password=viewer123
+echo SECURITY NOTICE: Default credentials available in README.md
+echo Please change default passwords after first login.
 echo.
 echo Press CTRL+C to stop the server
 echo ============================================================

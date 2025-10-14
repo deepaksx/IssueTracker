@@ -17,24 +17,24 @@ def init_database():
     # Create default admin user
     admin_id = User.create(username='admin', password='admin123', role='admin')
     if admin_id:
-        print(f"Admin user created: username='admin', password='admin123'")
+        print("Default admin user created successfully")
     else:
         print("Admin user already exists.")
 
     # Create default viewer user
     viewer_id = User.create(username='viewer', password='viewer123', role='viewer')
     if viewer_id:
-        print(f"Viewer user created: username='viewer', password='viewer123'")
+        print("Default viewer user created successfully")
     else:
         print("Viewer user already exists.")
 
     print("\n" + "="*60)
     print("Database initialization complete!")
     print("="*60)
-    print("\nDefault credentials:")
-    print("  Admin:  username='admin'  password='admin123'")
-    print("  Viewer: username='viewer' password='viewer123'")
-    print("\n*** IMPORTANT: Change these passwords in production! ***")
+    print("\n*** IMPORTANT SECURITY NOTICE ***")
+    print("Default users have been created with standard credentials.")
+    print("Please refer to the documentation for login information.")
+    print("Change all default passwords immediately after first login!")
     print("="*60)
 
 
