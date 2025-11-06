@@ -262,13 +262,22 @@ canvas {
 #companyChart {
     max-height: 200px !important;
 }
+
+/* Make charts look clickable */
+canvas {
+    cursor: pointer;
+}
+
+.card canvas:hover {
+    opacity: 0.9;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 // Status Distribution Chart
 const statusCtx = document.getElementById('statusChart').getContext('2d');
-new Chart(statusCtx, {
+const statusChart = new Chart(statusCtx, {
     type: 'doughnut',
     data: {
         labels: {{ chart_data.status_labels | tojson }},
@@ -291,13 +300,20 @@ new Chart(statusCtx, {
                     }
                 }
             }
+        },
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const status = {{ chart_data.status_labels | tojson }}[index];
+                window.location.href = `/tracker?status=${encodeURIComponent(status)}`;
+            }
         }
     }
 });
 
 // Priority Distribution Chart
 const priorityCtx = document.getElementById('priorityChart').getContext('2d');
-new Chart(priorityCtx, {
+const priorityChart = new Chart(priorityCtx, {
     type: 'bar',
     data: {
         labels: {{ chart_data.priority_labels | tojson }},
@@ -332,13 +348,20 @@ new Chart(priorityCtx, {
                     }
                 }
             }
+        },
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const priority = {{ chart_data.priority_labels | tojson }}[index];
+                window.location.href = `/tracker?priority=${encodeURIComponent(priority)}`;
+            }
         }
     }
 });
 
 // Category Distribution Chart
 const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-new Chart(categoryCtx, {
+const categoryChart = new Chart(categoryCtx, {
     type: 'pie',
     data: {
         labels: {{ chart_data.category_labels | tojson }},
@@ -361,13 +384,20 @@ new Chart(categoryCtx, {
                     }
                 }
             }
+        },
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const category = {{ chart_data.category_labels | tojson }}[index];
+                window.location.href = `/tracker?category=${encodeURIComponent(category)}`;
+            }
         }
     }
 });
 
 // Company Distribution Chart (Stacked by Status)
 const companyCtx = document.getElementById('companyChart').getContext('2d');
-new Chart(companyCtx, {
+const companyChart = new Chart(companyCtx, {
     type: 'bar',
     data: {
         labels: {{ chart_data.company_labels | tojson }},
@@ -408,6 +438,11 @@ new Chart(companyCtx, {
                     font: {
                         size: 9
                     }
+                },
+                onClick: (event, legendItem, legend) => {
+                    // Click on legend filters by status
+                    const status = legendItem.text;
+                    window.location.href = `/tracker?status=${encodeURIComponent(status)}`;
                 }
             }
         },
@@ -430,6 +465,16 @@ new Chart(companyCtx, {
                     },
                     autoSkip: false
                 }
+            }
+        },
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const companyIndex = elements[0].index;
+                const datasetIndex = elements[0].datasetIndex;
+                const company = {{ chart_data.company_labels | tojson }}[companyIndex];
+                const statuses = ['Not Started', 'In Progress', 'Resolved', 'Closed'];
+                const status = statuses[datasetIndex];
+                window.location.href = `/tracker?company=${encodeURIComponent(company)}&status=${encodeURIComponent(status)}`;
             }
         }
     }
