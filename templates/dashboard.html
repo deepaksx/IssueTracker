@@ -125,7 +125,7 @@
                 <h5 class="mb-0"><i class="bi bi-building"></i> Issues by Company</h5>
             </div>
             <div class="card-body p-2">
-                <canvas id="companyChart" height="140"></canvas>
+                <canvas id="companyChart" height="200"></canvas>
             </div>
         </div>
     </div>
@@ -256,7 +256,11 @@
 
 /* Compact chart legends */
 canvas {
-    max-height: 140px;
+    max-height: 200px;
+}
+
+#companyChart {
+    max-height: 200px !important;
 }
 </style>
 
@@ -422,8 +426,9 @@ new Chart(companyCtx, {
                 stacked: true,
                 ticks: {
                     font: {
-                        size: 10
-                    }
+                        size: 11
+                    },
+                    autoSkip: false
                 }
             }
         }
