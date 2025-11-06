@@ -361,17 +361,34 @@ new Chart(categoryCtx, {
     }
 });
 
-// Company Distribution Chart
+// Company Distribution Chart (Stacked by Status)
 const companyCtx = document.getElementById('companyChart').getContext('2d');
 new Chart(companyCtx, {
     type: 'bar',
     data: {
         labels: {{ chart_data.company_labels | tojson }},
-        datasets: [{
-            label: 'Issues',
-            data: {{ chart_data.company_values | tojson }},
-            backgroundColor: '#0d6efd'
-        }]
+        datasets: [
+            {
+                label: 'Not Started',
+                data: {{ chart_data.company_not_started | tojson }},
+                backgroundColor: '#dc3545'
+            },
+            {
+                label: 'In Progress',
+                data: {{ chart_data.company_in_progress | tojson }},
+                backgroundColor: '#ffc107'
+            },
+            {
+                label: 'Resolved',
+                data: {{ chart_data.company_resolved | tojson }},
+                backgroundColor: '#198754'
+            },
+            {
+                label: 'Closed',
+                data: {{ chart_data.company_closed | tojson }},
+                backgroundColor: '#6c757d'
+            }
+        ]
     },
     options: {
         responsive: true,
@@ -379,11 +396,20 @@ new Chart(companyCtx, {
         indexAxis: 'y',
         plugins: {
             legend: {
-                display: false
+                display: true,
+                position: 'bottom',
+                labels: {
+                    boxWidth: 12,
+                    padding: 6,
+                    font: {
+                        size: 9
+                    }
+                }
             }
         },
         scales: {
             x: {
+                stacked: true,
                 beginAtZero: true,
                 ticks: {
                     stepSize: 1,
@@ -393,6 +419,7 @@ new Chart(companyCtx, {
                 }
             },
             y: {
+                stacked: true,
                 ticks: {
                     font: {
                         size: 10

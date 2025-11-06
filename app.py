@@ -202,10 +202,22 @@ def dashboard():
     category_labels = list(category_counter.keys())
     category_values = list(category_counter.values())
 
-    # Company distribution
-    company_counter = Counter(i['company'] or 'Unassigned' for i in issues)
-    company_labels = list(company_counter.keys())[:10]  # Top 10 companies
-    company_values = [company_counter[c] for c in company_labels]
+    # Company distribution by status (stacked)
+    company_status_data = {}
+    for issue in issues:
+        company = issue['company'] or 'Unassigned'
+        status = issue['status']
+        if company not in company_status_data:
+            company_status_data[company] = {'Not Started': 0, 'In Progress': 0, 'Resolved': 0, 'Closed': 0}
+        company_status_data[company][status] += 1
+
+    # Get top 10 companies by total issues
+    sorted_companies = sorted(company_status_data.items(), key=lambda x: sum(x[1].values()), reverse=True)[:10]
+    company_labels = [c[0] for c in sorted_companies]
+    company_not_started = [company_status_data[c]['Not Started'] for c in company_labels]
+    company_in_progress = [company_status_data[c]['In Progress'] for c in company_labels]
+    company_resolved = [company_status_data[c]['Resolved'] for c in company_labels]
+    company_closed = [company_status_data[c]['Closed'] for c in company_labels]
 
     chart_data = {
         'status_labels': status_labels,
@@ -215,7 +227,10 @@ def dashboard():
         'category_labels': category_labels,
         'category_values': category_values,
         'company_labels': company_labels,
-        'company_values': company_values
+        'company_not_started': company_not_started,
+        'company_in_progress': company_in_progress,
+        'company_resolved': company_resolved,
+        'company_closed': company_closed
     }
 
     return render_template('dashboard.html', kpi=kpi, chart_data=chart_data)
