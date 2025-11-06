@@ -178,37 +178,40 @@ def dashboard():
             department=current_user.department
         )
 
+    # Filter out closed issues from charts
+    active_issues = [i for i in issues if i['status'] != 'Closed']
+
     # Calculate KPIs
     kpi = {
-        'total_issues': len(issues),
-        'open_issues': len([i for i in issues if i['status'] == 'Not Started']),
-        'in_progress_issues': len([i for i in issues if i['status'] == 'In Progress']),
-        'resolved_issues': len([i for i in issues if i['status'] == 'Resolved'])
+        'total_issues': len(active_issues),
+        'open_issues': len([i for i in active_issues if i['status'] == 'Not Started']),
+        'in_progress_issues': len([i for i in active_issues if i['status'] == 'In Progress']),
+        'resolved_issues': len([i for i in active_issues if i['status'] == 'Resolved'])
     }
 
-    # Prepare chart data
+    # Prepare chart data (excluding closed issues)
     # Status distribution
-    status_counter = Counter(i['status'] for i in issues)
-    status_labels = ['Not Started', 'In Progress', 'Resolved', 'Closed']
+    status_counter = Counter(i['status'] for i in active_issues)
+    status_labels = ['Not Started', 'In Progress', 'Resolved']
     status_values = [status_counter.get(s, 0) for s in status_labels]
 
     # Priority distribution
-    priority_counter = Counter(i['priority'] for i in issues)
+    priority_counter = Counter(i['priority'] for i in active_issues)
     priority_labels = ['Low', 'Medium', 'High', 'Critical']
     priority_values = [priority_counter.get(p, 0) for p in priority_labels]
 
     # Category distribution
-    category_counter = Counter(i['category'] for i in issues)
+    category_counter = Counter(i['category'] for i in active_issues)
     category_labels = list(category_counter.keys())
     category_values = list(category_counter.values())
 
-    # Company distribution by status (stacked)
+    # Company distribution by status (stacked, excluding closed)
     company_status_data = {}
-    for issue in issues:
+    for issue in active_issues:
         company = issue['company'] or 'Unassigned'
         status = issue['status']
         if company not in company_status_data:
-            company_status_data[company] = {'Not Started': 0, 'In Progress': 0, 'Resolved': 0, 'Closed': 0}
+            company_status_data[company] = {'Not Started': 0, 'In Progress': 0, 'Resolved': 0}
         company_status_data[company][status] += 1
 
     # Get top 10 companies by total issues
@@ -217,7 +220,6 @@ def dashboard():
     company_not_started = [company_status_data[c]['Not Started'] for c in company_labels]
     company_in_progress = [company_status_data[c]['In Progress'] for c in company_labels]
     company_resolved = [company_status_data[c]['Resolved'] for c in company_labels]
-    company_closed = [company_status_data[c]['Closed'] for c in company_labels]
 
     chart_data = {
         'status_labels': status_labels,
@@ -229,8 +231,7 @@ def dashboard():
         'company_labels': company_labels,
         'company_not_started': company_not_started,
         'company_in_progress': company_in_progress,
-        'company_resolved': company_resolved,
-        'company_closed': company_closed
+        'company_resolved': company_resolved
     }
 
     return render_template('dashboard.html', kpi=kpi, chart_data=chart_data)

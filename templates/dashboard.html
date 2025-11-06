@@ -283,7 +283,7 @@ const statusChart = new Chart(statusCtx, {
         labels: {{ chart_data.status_labels | tojson }},
         datasets: [{
             data: {{ chart_data.status_values | tojson }},
-            backgroundColor: ['#dc3545', '#ffc107', '#198754', '#6c757d']
+            backgroundColor: ['#dc3545', '#ffc107', '#198754']
         }]
     },
     options: {
@@ -416,11 +416,6 @@ const companyChart = new Chart(companyCtx, {
                 label: 'Resolved',
                 data: {{ chart_data.company_resolved | tojson }},
                 backgroundColor: '#198754'
-            },
-            {
-                label: 'Closed',
-                data: {{ chart_data.company_closed | tojson }},
-                backgroundColor: '#6c757d'
             }
         ]
     },
@@ -472,7 +467,7 @@ const companyChart = new Chart(companyCtx, {
                 const companyIndex = elements[0].index;
                 const datasetIndex = elements[0].datasetIndex;
                 const company = {{ chart_data.company_labels | tojson }}[companyIndex];
-                const statuses = ['Not Started', 'In Progress', 'Resolved', 'Closed'];
+                const statuses = ['Not Started', 'In Progress', 'Resolved'];
                 const status = statuses[datasetIndex];
                 window.location.href = `/tracker?company=${encodeURIComponent(company)}&status=${encodeURIComponent(status)}`;
             }
