@@ -693,10 +693,17 @@ main.container {
 .priority-critical,
 .priority-high,
 .priority-low {
-    background-color: white;
-    color: #4B5563;
-    border: 1px solid #E5E7EB;
+    background-color: white !important;
+    color: #4B5563 !important;
+    border: 1px solid #E5E7EB !important;
     font-weight: 500;
+}
+
+/* Ensure category badges are white */
+span.badge.bg-info {
+    background-color: white !important;
+    color: #4B5563 !important;
+    border: 1px solid #E5E7EB !important;
 }
 
 /* Priority Flag Icon */
