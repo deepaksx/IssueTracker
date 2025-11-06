@@ -126,6 +126,10 @@ class Database:
                 cursor.execute('ALTER TABLE users ADD COLUMN department TEXT')
                 print("✓ Auto-migrated: Added 'department' column to users table")
 
+            if 'created_at' not in user_columns:
+                cursor.execute('ALTER TABLE users ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
+                print("✓ Auto-migrated: Added 'created_at' column to users table")
+
             # Check and add missing columns to issues table
             cursor.execute("PRAGMA table_info(issues)")
             issue_columns = [column[1] for column in cursor.fetchall()]
