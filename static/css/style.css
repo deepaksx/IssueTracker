@@ -1,13 +1,19 @@
 /* IT Issue Tracker - Modern Project Management Design */
 
 :root {
-    /* Modern Color Palette */
-    --primary-blue: #5B8DEF;
-    --primary-purple: #8B5CF6;
+    /* EFI Brand Color Palette - Orange/Gold Theme */
+    --primary-orange: #EA580C;
+    --primary-amber: #F59E0B;
+    --brand-gold: #FBBF24;
+    --brand-brown: #92400E;
     --success-green: #10B981;
-    --warning-orange: #F59E0B;
     --danger-red: #EF4444;
     --urgent-red: #DC2626;
+
+    /* Legacy color aliases for backward compatibility */
+    --primary-blue: #EA580C;
+    --primary-purple: #F59E0B;
+    --warning-orange: #F59E0B;
 
     /* Status Colors */
     --status-open: #EF4444;
@@ -18,7 +24,7 @@
     /* Priority Colors */
     --priority-critical: #DC2626;
     --priority-high: #F59E0B;
-    --priority-medium: #3B82F6;
+    --priority-medium: #EA580C;
     --priority-low: #6B7280;
 
     /* Neutral colors */
@@ -35,9 +41,9 @@
     --sidebar-bg: #FFFFFF;
     --sidebar-width: 240px;
     --sidebar-border: #E5E7EB;
-    --sidebar-hover: #F3F4F6;
-    --sidebar-active: #EEF2FF;
-    --sidebar-active-text: #5B8DEF;
+    --sidebar-hover: #FFF7ED;
+    --sidebar-active: #FFEDD5;
+    --sidebar-active-text: #EA580C;
 
     /* Spacing */
     --spacing-xs: 0.25rem;
@@ -1019,7 +1025,7 @@ main.container {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+    background: linear-gradient(135deg, #EA580C 0%, #F59E0B 100%);
     padding: var(--spacing-md);
     animation: gradientShift 15s ease infinite;
     background-size: 200% 200%;
@@ -1077,7 +1083,7 @@ main.container {
     font-weight: 700;
     margin-bottom: var(--spacing-md);
     animation: fadeIn 0.8s ease-out 0.3s both;
-    background: linear-gradient(135deg, #5B8DEF 0%, #8B5CF6 100%);
+    background: linear-gradient(135deg, #EA580C 0%, #F59E0B 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1093,7 +1099,7 @@ main.container {
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background: linear-gradient(90deg, #5B8DEF, #8B5CF6);
+    background: linear-gradient(90deg, #EA580C, #F59E0B);
     border-radius: 2px;
 }
 
@@ -1117,7 +1123,7 @@ main.container {
 }
 
 .login-card .btn-primary {
-    background: linear-gradient(135deg, #5B8DEF 0%, #8B5CF6 100%);
+    background: linear-gradient(135deg, #EA580C 0%, #F59E0B 100%);
     border: none;
     font-weight: 600;
     transition: all 0.3s ease;
