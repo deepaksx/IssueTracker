@@ -12,40 +12,62 @@ def migrate_database():
     cursor = conn.cursor()
 
     try:
-        # Check if columns already exist
+        # Migrate USERS table
+        print("\n--- Migrating USERS table ---")
+        cursor.execute("PRAGMA table_info(users)")
+        user_columns = [column[1] for column in cursor.fetchall()]
+
+        # Add company column to users if it doesn't exist
+        if 'company' not in user_columns:
+            print("Adding 'company' column to users table...")
+            cursor.execute('ALTER TABLE users ADD COLUMN company TEXT')
+            print("✓ Added 'company' column to users")
+        else:
+            print("✓ 'company' column already exists in users")
+
+        # Add department column to users if it doesn't exist
+        if 'department' not in user_columns:
+            print("Adding 'department' column to users table...")
+            cursor.execute('ALTER TABLE users ADD COLUMN department TEXT')
+            print("✓ Added 'department' column to users")
+        else:
+            print("✓ 'department' column already exists in users")
+
+        # Migrate ISSUES table
+        print("\n--- Migrating ISSUES table ---")
         cursor.execute("PRAGMA table_info(issues)")
-        columns = [column[1] for column in cursor.fetchall()]
+        issue_columns = [column[1] for column in cursor.fetchall()]
 
         # Add company column if it doesn't exist
-        if 'company' not in columns:
-            print("Adding 'company' column...")
+        if 'company' not in issue_columns:
+            print("Adding 'company' column to issues table...")
             cursor.execute('ALTER TABLE issues ADD COLUMN company TEXT')
-            print("✓ Added 'company' column")
+            print("✓ Added 'company' column to issues")
         else:
-            print("✓ 'company' column already exists")
+            print("✓ 'company' column already exists in issues")
 
         # Add department column if it doesn't exist
-        if 'department' not in columns:
-            print("Adding 'department' column...")
+        if 'department' not in issue_columns:
+            print("Adding 'department' column to issues table...")
             cursor.execute('ALTER TABLE issues ADD COLUMN department TEXT')
-            print("✓ Added 'department' column")
+            print("✓ Added 'department' column to issues")
         else:
-            print("✓ 'department' column already exists")
+            print("✓ 'department' column already exists in issues")
 
         # Add application column if it doesn't exist
-        if 'application' not in columns:
-            print("Adding 'application' column...")
+        if 'application' not in issue_columns:
+            print("Adding 'application' column to issues table...")
             cursor.execute('ALTER TABLE issues ADD COLUMN application TEXT')
-            print("✓ Added 'application' column")
+            print("✓ Added 'application' column to issues")
         else:
-            print("✓ 'application' column already exists")
+            print("✓ 'application' column already exists in issues")
 
         conn.commit()
         print("\n" + "="*60)
         print("Migration completed successfully!")
         print("="*60)
         print("\nYour existing data has been preserved.")
-        print("You can now add Company, Department, and Application to issues.")
+        print("Both users and issues tables have been updated.")
 
     except Exception as e:
         conn.rollback()

@@ -111,7 +111,42 @@ class Database:
         ''')
 
         conn.commit()
-        conn.close()
+
+        # Auto-migrate: Add missing columns to existing tables
+        try:
+            # Check and add missing columns to users table
+            cursor.execute("PRAGMA table_info(users)")
+            user_columns = [column[1] for column in cursor.fetchall()]
+
+            if 'company' not in user_columns:
+                cursor.execute('ALTER TABLE users ADD COLUMN company TEXT')
+                print("✓ Auto-migrated: Added 'company' column to users table")
+
+            if 'department' not in user_columns:
+                cursor.execute('ALTER TABLE users ADD COLUMN department TEXT')
+                print("✓ Auto-migrated: Added 'department' column to users table")
+
+            # Check and add missing columns to issues table
+            cursor.execute("PRAGMA table_info(issues)")
+            issue_columns = [column[1] for column in cursor.fetchall()]
+
+            if 'company' not in issue_columns:
+                cursor.execute('ALTER TABLE issues ADD COLUMN company TEXT')
+                print("✓ Auto-migrated: Added 'company' column to issues table")
+
+            if 'department' not in issue_columns:
+                cursor.execute('ALTER TABLE issues ADD COLUMN department TEXT')
+                print("✓ Auto-migrated: Added 'department' column to issues table")
+
+            if 'application' not in issue_columns:
+                cursor.execute('ALTER TABLE issues ADD COLUMN application TEXT')
+                print("✓ Auto-migrated: Added 'application' column to issues table")
+
+            conn.commit()
+        except Exception as e:
+            print(f"Note: Auto-migration check completed with message: {e}")
+        finally:
+            conn.close()
 
 
 class User:
