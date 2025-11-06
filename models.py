@@ -164,6 +164,13 @@ class Database:
                 cursor.execute('ALTER TABLE issues ADD COLUMN application TEXT')
                 print("✓ Auto-migrated: Added 'application' column to issues table")
 
+            # Migrate old 'Open' status to 'Not Started'
+            cursor.execute("SELECT COUNT(*) FROM issues WHERE status = 'Open'")
+            open_count = cursor.fetchone()[0]
+            if open_count > 0:
+                cursor.execute("UPDATE issues SET status = 'Not Started' WHERE status = 'Open'")
+                print(f"✓ Auto-migrated: Updated {open_count} issues from 'Open' to 'Not Started'")
+
             conn.commit()
         except Exception as e:
             print(f"Note: Auto-migration check completed with message: {e}")
