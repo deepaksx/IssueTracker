@@ -38,8 +38,8 @@ db = Database()
 
 
 # Custom Jinja2 filter for date formatting
-@app.template_filter('format_date')
-def format_date_filter(date_string):
+@app.template_filter('datetime_format')
+def datetime_format_filter(date_string):
     """Format date string to dd-MMM-YYYY format"""
     if not date_string:
         return '-'

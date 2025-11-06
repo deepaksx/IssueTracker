@@ -202,7 +202,7 @@
                                 {% endif %}
                             </td>
                             <td class="date-cell">
-                                <span class="text-muted">{{ issue.created_at|format_date }}</span>
+                                <span class="text-muted">{{ issue.created_at | datetime_format }}</span>
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
