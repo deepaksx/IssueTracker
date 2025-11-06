@@ -279,6 +279,14 @@ canvas {
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+// Helper function to create gradient
+function createGradient(ctx, colorStart, colorEnd) {
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, colorStart);
+    gradient.addColorStop(1, colorEnd);
+    return gradient;
+}
+
 // Status Distribution Chart
 const statusCtx = document.getElementById('statusChart').getContext('2d');
 const statusChart = new Chart(statusCtx, {
@@ -287,7 +295,12 @@ const statusChart = new Chart(statusCtx, {
         labels: {{ chart_data.status_labels | tojson }},
         datasets: [{
             data: {{ chart_data.status_values | tojson }},
-            backgroundColor: ['#EF4444', '#F59E0B', '#10B981']
+            backgroundColor: [
+                '#EF4444',  // Not Started - Red
+                '#F59E0B',  // In Progress - Amber
+                '#10B981'   // Resolved - Green
+            ],
+            borderWidth: 0
         }]
     },
     options: {
@@ -324,7 +337,14 @@ const priorityChart = new Chart(priorityCtx, {
         datasets: [{
             label: 'Issues',
             data: {{ chart_data.priority_values | tojson }},
-            backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#DC2626']
+            backgroundColor: [
+                createGradient(priorityCtx, '#34D399', '#059669'),  // Low - Green gradient
+                createGradient(priorityCtx, '#FBBF24', '#D97706'),  // Medium - Amber gradient
+                createGradient(priorityCtx, '#F87171', '#DC2626'),  // High - Red gradient
+                createGradient(priorityCtx, '#DC2626', '#991B1B')   // Critical - Dark Red gradient
+            ],
+            borderRadius: 4,
+            borderWidth: 0
         }]
     },
     options: {
@@ -371,7 +391,14 @@ const categoryChart = new Chart(categoryCtx, {
         labels: {{ chart_data.category_labels | tojson }},
         datasets: [{
             data: {{ chart_data.category_values | tojson }},
-            backgroundColor: ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444']
+            backgroundColor: [
+                '#60A5FA',  // Blue (lighter)
+                '#A78BFA',  // Purple (lighter)
+                '#34D399',  // Green (lighter)
+                '#FBBF24',  // Amber (lighter)
+                '#F87171'   // Red (lighter)
+            ],
+            borderWidth: 0
         }]
     },
     options: {
@@ -409,17 +436,23 @@ const companyChart = new Chart(companyCtx, {
             {
                 label: 'Not Started',
                 data: {{ chart_data.company_not_started | tojson }},
-                backgroundColor: '#EF4444'
+                backgroundColor: createGradient(companyCtx, '#F87171', '#DC2626'),
+                borderRadius: 4,
+                borderWidth: 0
             },
             {
                 label: 'In Progress',
                 data: {{ chart_data.company_in_progress | tojson }},
-                backgroundColor: '#F59E0B'
+                backgroundColor: createGradient(companyCtx, '#FBBF24', '#D97706'),
+                borderRadius: 4,
+                borderWidth: 0
             },
             {
                 label: 'Resolved',
                 data: {{ chart_data.company_resolved | tojson }},
-                backgroundColor: '#10B981'
+                backgroundColor: createGradient(companyCtx, '#34D399', '#059669'),
+                borderRadius: 4,
+                borderWidth: 0
             }
         ]
     },
