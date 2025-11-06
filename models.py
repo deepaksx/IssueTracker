@@ -47,7 +47,7 @@ class Database:
                 application TEXT,
                 category TEXT NOT NULL CHECK(category IN ('Hardware', 'Software', 'Network', 'Security', 'Other')),
                 priority TEXT NOT NULL CHECK(priority IN ('Low', 'Medium', 'High', 'Critical')),
-                status TEXT NOT NULL CHECK(status IN ('Open', 'In Progress', 'Resolved', 'Closed')),
+                status TEXT NOT NULL CHECK(status IN ('Not Started', 'In Progress', 'Resolved', 'Closed')),
                 assigned_to TEXT,
                 created_by TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

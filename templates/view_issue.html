@@ -38,8 +38,8 @@
     <div class="issue-meta-bar">
         <div class="meta-item">
             <span class="meta-label">Status</span>
-            {% if issue.status == 'Open' %}
-                <span class="badge status-open">Open</span>
+            {% if issue.status == 'Not Started' %}
+                <span class="badge status-open">Not Started</span>
             {% elif issue.status == 'In Progress' %}
                 <span class="badge status-progress">In Progress</span>
             {% elif issue.status == 'Resolved' %}

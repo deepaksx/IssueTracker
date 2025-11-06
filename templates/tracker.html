@@ -8,8 +8,8 @@
 <div class="page-header">
     <div class="header-left">
         <div class="btn-group dashboard-toggle" role="group">
-            <a href="{{ url_for('tracker', status='Open') }}" class="btn btn-status-open {% if status_filter == 'Open' %}active{% endif %}">
-                <i class="bi bi-exclamation-circle"></i> Open
+            <a href="{{ url_for('tracker', status='Not Started') }}" class="btn btn-status-open {% if status_filter == 'Not Started' %}active{% endif %}">
+                <i class="bi bi-exclamation-circle"></i> Not Started
             </a>
             <a href="{{ url_for('tracker', status='In Progress') }}" class="btn btn-status-progress {% if status_filter == 'In Progress' %}active{% endif %}">
                 <i class="bi bi-hourglass-split"></i> In Progress
@@ -104,7 +104,7 @@
             <label class="form-label form-label-sm">Status</label>
             <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
                 <option value="">All</option>
-                <option value="Open" {% if status_filter == 'Open' %}selected{% endif %}>Open</option>
+                <option value="Not Started" {% if status_filter == 'Not Started' %}selected{% endif %}>Not Started</option>
                 <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
                 <option value="Resolved" {% if status_filter == 'Resolved' %}selected{% endif %}>Resolved</option>
                 <option value="Closed" {% if status_filter == 'Closed' %}selected{% endif %}>Closed</option>
@@ -191,8 +191,8 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if issue.status == 'Open' %}
-                                    <span class="badge status-open">Open</span>
+                                {% if issue.status == 'Not Started' %}
+                                    <span class="badge status-open">Not Started</span>
                                 {% elif issue.status == 'In Progress' %}
                                     <span class="badge status-progress">In Progress</span>
                                 {% elif issue.status == 'Resolved' %}

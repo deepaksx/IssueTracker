@@ -181,7 +181,7 @@ def dashboard():
     # Calculate KPIs
     kpi = {
         'total_issues': len(issues),
-        'open_issues': len([i for i in issues if i['status'] == 'Open']),
+        'open_issues': len([i for i in issues if i['status'] == 'Not Started']),
         'in_progress_issues': len([i for i in issues if i['status'] == 'In Progress']),
         'resolved_issues': len([i for i in issues if i['status'] == 'Resolved'])
     }
@@ -189,7 +189,7 @@ def dashboard():
     # Prepare chart data
     # Status distribution
     status_counter = Counter(i['status'] for i in issues)
-    status_labels = ['Open', 'In Progress', 'Resolved', 'Closed']
+    status_labels = ['Not Started', 'In Progress', 'Resolved', 'Closed']
     status_values = [status_counter.get(s, 0) for s in status_labels]
 
     # Priority distribution
@@ -225,8 +225,8 @@ def dashboard():
 @login_required
 def tracker():
     """Issue tracker showing list of issues (defaults to Open issues)"""
-    # Get filter parameters - default to 'Open' status if no parameters provided
-    status_filter = request.args.get('status', 'Open' if not request.args else '')
+    # Get filter parameters - default to 'Not Started' status if no parameters provided
+    status_filter = request.args.get('status', 'Not Started' if not request.args else '')
     priority_filter = request.args.get('priority', '')
     category_filter = request.args.get('category', '')
     company_filter = request.args.get('company', '')
@@ -318,7 +318,7 @@ def add_issue():
             application=application if application else None,
             category=category,
             priority=priority,
-            status='Open',  # Always set new issues to Open
+            status='Not Started',  # Always set new issues to Not Started
             assigned_to=None,
             created_by=current_user.username
         )

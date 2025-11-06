@@ -26,13 +26,13 @@
         </div>
     </div>
 
-    <!-- Open Issues -->
+    <!-- Not Started Issues -->
     <div class="col-md-3">
         <div class="card kpi-card kpi-card-danger">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="card-subtitle mb-2 text-muted">Open Issues</h6>
+                        <h6 class="card-subtitle mb-2 text-muted">Not Started</h6>
                         <h2 class="card-title mb-0">{{ kpi.open_issues }}</h2>
                     </div>
                     <div class="kpi-icon">
@@ -141,8 +141,8 @@
                     <a href="{{ url_for('tracker') }}" class="btn btn-sm btn-outline-primary">
                         <i class="bi bi-list-ul"></i> View All Issues
                     </a>
-                    <a href="{{ url_for('tracker', status='Open') }}" class="btn btn-sm btn-outline-danger">
-                        <i class="bi bi-exclamation-circle"></i> View Open Issues
+                    <a href="{{ url_for('tracker', status='Not Started') }}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-exclamation-circle"></i> View Not Started Issues
                     </a>
                     {% if current_user.is_admin() or current_user.is_hod() %}
                     <a href="{{ url_for('add_issue') }}" class="btn btn-sm btn-outline-success">

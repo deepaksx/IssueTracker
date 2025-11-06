@@ -105,7 +105,7 @@
                         <div class="col-md-4 mb-3">
                             <label for="status" class="form-label">Status</label>
                             <select class="form-select" id="status" name="status" required>
-                                <option value="Open" {% if issue.status == 'Open' %}selected{% endif %}>Open</option>
+                                <option value="Not Started" {% if issue.status == 'Not Started' %}selected{% endif %}>Not Started</option>
                                 <option value="In Progress" {% if issue.status == 'In Progress' %}selected{% endif %}>In Progress</option>
                                 <option value="Resolved" {% if issue.status == 'Resolved' %}selected{% endif %}>Resolved</option>
                                 <option value="Closed" {% if issue.status == 'Closed' %}selected{% endif %}>Closed</option>
