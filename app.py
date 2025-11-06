@@ -44,12 +44,18 @@ def datetime_format_filter(date_string):
     if not date_string:
         return '-'
     try:
-        # Parse the date string (assuming it's in YYYY-MM-DD format)
-        date_obj = datetime.strptime(date_string[:10], '%Y-%m-%d')
-        # Format to dd-MMM-YYYY
-        return date_obj.strftime('%d-%b-%Y')
-    except:
-        return date_string
+        # Handle string date format
+        if isinstance(date_string, str):
+            date_obj = datetime.strptime(date_string[:10], '%Y-%m-%d')
+            return date_obj.strftime('%d-%b-%Y')
+        # If it's already a datetime object, just format it
+        elif hasattr(date_string, 'strftime'):
+            return date_string.strftime('%d-%b-%Y')
+        else:
+            return str(date_string)
+    except Exception as e:
+        # Return original value if formatting fails
+        return str(date_string) if date_string else '-'
 
 
 class FlaskUser(UserMixin):
