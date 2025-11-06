@@ -494,13 +494,16 @@ main.container {
 }
 
 .btn-warning {
-    background-color: var(--warning-orange);
-    color: white;
+    background-color: white;
+    color: #6B7280;
+    border: 1px solid #E5E7EB;
 }
 
 .btn-warning:hover {
-    background-color: #E89005;
-    box-shadow: var(--shadow-md);
+    background-color: #F9FAFB;
+    border-color: #D1D5DB;
+    color: #4B5563;
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-danger {
@@ -668,52 +671,32 @@ main.container {
 }
 
 /* Status badges */
+/* Status badges - Neutral white style */
 .badge.bg-danger,
-.status-open {
-    background-color: #FEE2E2;
-    color: var(--status-open);
-}
-
+.status-open,
 .badge.bg-warning,
-.status-progress {
-    background-color: #FEF3C7;
-    color: #B45309;
-}
-
+.status-progress,
 .badge.bg-success,
-.status-resolved {
-    background-color: #D1FAE5;
-    color: var(--status-resolved);
-}
-
+.status-resolved,
 .badge.bg-secondary,
 .status-closed {
-    background-color: var(--bg-tertiary);
-    color: var(--status-closed);
+    background-color: white;
+    color: #4B5563;
+    border: 1px solid #E5E7EB;
+    font-weight: 500;
 }
 
-/* Priority badges */
+/* Priority badges - Neutral white style */
 .badge.bg-info,
 .badge.bg-primary,
-.priority-medium {
-    background-color: #FFEDD5;
-    color: var(--priority-medium);
-}
-
-.priority-critical {
-    background-color: #FEE2E2;
-    color: var(--priority-critical);
-    font-weight: 600;
-}
-
-.priority-high {
-    background-color: #FEF3C7;
-    color: var(--priority-high);
-}
-
+.priority-medium,
+.priority-critical,
+.priority-high,
 .priority-low {
-    background-color: var(--bg-tertiary);
-    color: var(--priority-low);
+    background-color: white;
+    color: #4B5563;
+    border: 1px solid #E5E7EB;
+    font-weight: 500;
 }
 
 /* Priority Flag Icon */
