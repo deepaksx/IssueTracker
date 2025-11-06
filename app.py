@@ -33,8 +33,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Initialize database
-db = Database()
+# Initialize database with configured path
+db = Database(app.config['DATABASE_PATH'])
 
 # Ensure database is initialized (with auto-migration) when app starts
 # This runs both in development (python app.py) and production (gunicorn)
@@ -381,7 +381,7 @@ def view_issue(issue_id):
 @hod_or_admin_required
 def edit_issue(issue_id):
     """Edit issue (HOD or admin)"""
-    issue = Issue.get_by_id(issue_id)
+    issue = Issue.get_by_id(issue_id, db_path=app.config['DATABASE_PATH'])
     if not issue:
         flash('Issue not found.', 'danger')
         return redirect(url_for('dashboard'))
@@ -441,14 +441,19 @@ def edit_issue(issue_id):
             updates['company'] = current_user.company
             updates['department'] = current_user.department
 
-        Issue.update(issue_id, current_user.username, updates)
-        flash(f'Issue #{issue_id} updated successfully!', 'success')
-        return redirect(url_for('view_issue', issue_id=issue_id))
+        try:
+            Issue.update(issue_id, current_user.username, updates, db_path=app.config['DATABASE_PATH'])
+            flash(f'Issue #{issue_id} updated successfully!', 'success')
+            return redirect(url_for('view_issue', issue_id=issue_id))
+        except Exception as e:
+            app.logger.error(f"Error updating issue #{issue_id}: {str(e)}")
+            flash(f'Error updating issue: {str(e)}', 'danger')
+            return redirect(url_for('edit_issue', issue_id=issue_id))
 
     # Get available options for dropdowns
-    companies = Company.get_all()
-    departments = Department.get_all()
-    applications = Application.get_all()
+    companies = Company.get_all(db_path=app.config['DATABASE_PATH'])
+    departments = Department.get_all(db_path=app.config['DATABASE_PATH'])
+    applications = Application.get_all(db_path=app.config['DATABASE_PATH'])
 
     return render_template('edit_issue.html', issue=issue, companies=companies, departments=departments, applications=applications)
 
