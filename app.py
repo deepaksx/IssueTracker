@@ -166,7 +166,65 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    """Main dashboard showing issues (defaults to Open issues)"""
+    """Dashboard with KPIs and charts"""
+    from collections import Counter
+
+    # Get issues based on user role
+    if current_user.is_admin():
+        issues = Issue.get_all()
+    else:
+        issues = Issue.get_all(
+            company=current_user.company,
+            department=current_user.department
+        )
+
+    # Calculate KPIs
+    kpi = {
+        'total_issues': len(issues),
+        'open_issues': len([i for i in issues if i['status'] == 'Open']),
+        'in_progress_issues': len([i for i in issues if i['status'] == 'In Progress']),
+        'resolved_issues': len([i for i in issues if i['status'] == 'Resolved'])
+    }
+
+    # Prepare chart data
+    # Status distribution
+    status_counter = Counter(i['status'] for i in issues)
+    status_labels = ['Open', 'In Progress', 'Resolved', 'Closed']
+    status_values = [status_counter.get(s, 0) for s in status_labels]
+
+    # Priority distribution
+    priority_counter = Counter(i['priority'] for i in issues)
+    priority_labels = ['Low', 'Medium', 'High', 'Critical']
+    priority_values = [priority_counter.get(p, 0) for p in priority_labels]
+
+    # Category distribution
+    category_counter = Counter(i['category'] for i in issues)
+    category_labels = list(category_counter.keys())
+    category_values = list(category_counter.values())
+
+    # Company distribution
+    company_counter = Counter(i['company'] or 'Unassigned' for i in issues)
+    company_labels = list(company_counter.keys())[:10]  # Top 10 companies
+    company_values = [company_counter[c] for c in company_labels]
+
+    chart_data = {
+        'status_labels': status_labels,
+        'status_values': status_values,
+        'priority_labels': priority_labels,
+        'priority_values': priority_values,
+        'category_labels': category_labels,
+        'category_values': category_values,
+        'company_labels': company_labels,
+        'company_values': company_values
+    }
+
+    return render_template('dashboard.html', kpi=kpi, chart_data=chart_data)
+
+
+@app.route('/tracker')
+@login_required
+def tracker():
+    """Issue tracker showing list of issues (defaults to Open issues)"""
     # Get filter parameters - default to 'Open' status if no parameters provided
     status_filter = request.args.get('status', 'Open' if not request.args else '')
     priority_filter = request.args.get('priority', '')
@@ -214,7 +272,7 @@ def dashboard():
     departments = Department.get_all()
     applications = Application.get_all()
 
-    return render_template('dashboard.html',
+    return render_template('tracker.html',
                            issues=issues,
                            status_filter=status_filter,
                            priority_filter=priority_filter,

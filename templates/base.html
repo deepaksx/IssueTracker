@@ -39,8 +39,14 @@
                     <ul class="sidebar-menu">
                         <li class="sidebar-menu-item">
                             <a href="{{ url_for('dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
-                                <i class="bi bi-grid"></i>
+                                <i class="bi bi-speedometer2"></i>
                                 <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{{ url_for('tracker') }}" class="sidebar-menu-link {% if request.endpoint == 'tracker' %}active{% endif %}">
+                                <i class="bi bi-list-check"></i>
+                                <span>Tracker</span>
                             </a>
                         </li>
                         {% if current_user.is_admin() or current_user.is_hod() %}

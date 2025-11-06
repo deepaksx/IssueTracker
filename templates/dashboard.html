@@ -3,243 +3,325 @@
 {% block title %}Dashboard - EFI IT Issue Tracker{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-<!-- Page Header -->
 <div class="page-header">
-    <div class="header-left">
-        <div class="btn-group dashboard-toggle" role="group">
-            <a href="{{ url_for('dashboard', status='Open') }}" class="btn btn-status-open {% if status_filter == 'Open' %}active{% endif %}">
-                <i class="bi bi-exclamation-circle"></i> Open
-            </a>
-            <a href="{{ url_for('dashboard', status='In Progress') }}" class="btn btn-status-progress {% if status_filter == 'In Progress' %}active{% endif %}">
-                <i class="bi bi-hourglass-split"></i> In Progress
-            </a>
-            <a href="{{ url_for('dashboard', status='Resolved') }}" class="btn btn-status-resolved {% if status_filter == 'Resolved' %}active{% endif %}">
-                <i class="bi bi-check-circle"></i> Resolved
-            </a>
-            <a href="{{ url_for('dashboard', status='Closed') }}" class="btn btn-status-closed {% if status_filter == 'Closed' %}active{% endif %}">
-                <i class="bi bi-x-circle"></i> Closed
-            </a>
-            <a href="{{ url_for('dashboard', status='') }}" class="btn btn-status-all {% if status_filter == '' %}active{% endif %}">
-                <i class="bi bi-list-ul"></i> All
-            </a>
-        </div>
-    </div>
-    <div class="header-actions">
-        <a href="{{ url_for('export_csv') }}" class="btn btn-outline-dark">
-            <i class="bi bi-download"></i> Export CSV
-        </a>
-        {% if current_user.is_admin() or current_user.is_hod() %}
-        <a href="{{ url_for('add_issue') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Add Issue
-        </a>
-        {% endif %}
-    </div>
+    <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
 </div>
 
-<!-- Filter Panel -->
-<div class="filter-panel">
-    <form method="GET" action="{{ url_for('dashboard') }}" class="row g-2">
-        <div class="col-md-2">
-            <label class="form-label form-label-sm">Title/Description</label>
-            <input type="text" class="form-control form-control-sm" name="search" value="{{ search_query }}" placeholder="Search...">
-        </div>
-        <div class="col-md-1">
-            <label class="form-label form-label-sm">Company</label>
-            <select class="form-select form-select-sm" name="company" onchange="this.form.submit()" {% if current_user.is_hod() or current_user.is_viewer() %}disabled{% endif %}>
-                {% if current_user.is_hod() or current_user.is_viewer() %}
-                <option value="{{ current_user.company }}" selected>{{ current_user.company }}</option>
-                {% else %}
-                <option value="">All</option>
-                {% for company in companies %}
-                <option value="{{ company.name }}" {% if company_filter == company.name %}selected{% endif %}>{{ company.name }}</option>
-                {% endfor %}
-                {% endif %}
-            </select>
-        </div>
-        <div class="col-md-1">
-            <label class="form-label form-label-sm">Department</label>
-            <select class="form-select form-select-sm" name="department" onchange="this.form.submit()" {% if current_user.is_hod() or current_user.is_viewer() %}disabled{% endif %}>
-                {% if current_user.is_hod() or current_user.is_viewer() %}
-                <option value="{{ current_user.department }}" selected>{{ current_user.department }}</option>
-                {% else %}
-                <option value="">All</option>
-                {% for dept in departments %}
-                <option value="{{ dept.name }}" {% if department_filter == dept.name %}selected{% endif %}>{{ dept.name }}</option>
-                {% endfor %}
-                {% endif %}
-            </select>
-        </div>
-        <div class="col-md-1">
-            <label class="form-label form-label-sm">Application</label>
-            <select class="form-select form-select-sm" name="application" onchange="this.form.submit()">
-                <option value="">All</option>
-                {% for app in applications %}
-                <option value="{{ app.name }}" {% if application_filter == app.name %}selected{% endif %}>{{ app.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label form-label-sm">Category</label>
-            <select class="form-select form-select-sm" name="category" onchange="this.form.submit()">
-                <option value="">All</option>
-                <option value="Hardware" {% if category_filter == 'Hardware' %}selected{% endif %}>Hardware</option>
-                <option value="Software" {% if category_filter == 'Software' %}selected{% endif %}>Software</option>
-                <option value="Network" {% if category_filter == 'Network' %}selected{% endif %}>Network</option>
-                <option value="Security" {% if category_filter == 'Security' %}selected{% endif %}>Security</option>
-                <option value="Other" {% if category_filter == 'Other' %}selected{% endif %}>Other</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label form-label-sm">Priority</label>
-            <select class="form-select form-select-sm" name="priority" onchange="this.form.submit()">
-                <option value="">All</option>
-                <option value="Low" {% if priority_filter == 'Low' %}selected{% endif %}>Low</option>
-                <option value="Medium" {% if priority_filter == 'Medium' %}selected{% endif %}>Medium</option>
-                <option value="High" {% if priority_filter == 'High' %}selected{% endif %}>High</option>
-                <option value="Critical" {% if priority_filter == 'Critical' %}selected{% endif %}>Critical</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label form-label-sm">Status</label>
-            <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
-                <option value="">All</option>
-                <option value="Open" {% if status_filter == 'Open' %}selected{% endif %}>Open</option>
-                <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
-                <option value="Resolved" {% if status_filter == 'Resolved' %}selected{% endif %}>Resolved</option>
-                <option value="Closed" {% if status_filter == 'Closed' %}selected{% endif %}>Closed</option>
-            </select>
-        </div>
-        <div class="col-md-1">
-            <label class="form-label form-label-sm">&nbsp;</label>
-            <div class="d-flex gap-1">
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <i class="bi bi-funnel"></i>
-                </button>
-                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm" title="Reset Filters">
-                    <i class="bi bi-x-circle"></i>
-                </a>
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <!-- Total Issues -->
+    <div class="col-md-3">
+        <div class="card kpi-card kpi-card-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-muted">Total Issues</h6>
+                        <h2 class="card-title mb-0">{{ kpi.total_issues }}</h2>
+                    </div>
+                    <div class="kpi-icon">
+                        <i class="bi bi-list-ul"></i>
+                    </div>
+                </div>
             </div>
         </div>
-    </form>
-</div>
-
-<!-- Issues Table Card -->
-<div class="card issues-table-card">
-    <div class="card-header">
-        <span>Issues Overview</span>
-        <span class="text-muted">{{ issues|length }} issue(s)</span>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="table-checkbox"><input type="checkbox" id="selectAll"></th>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Company</th>
-                        <th>Department</th>
-                        <th>Application</th>
-                        <th>Category</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if issues %}
-                        {% for issue in issues %}
-                        <tr>
-                            <td class="table-checkbox"><input type="checkbox" class="issue-checkbox" value="{{ issue.id }}"></td>
-                            <td><span class="issue-id">#{{ issue.id }}</span></td>
-                            <td>
-                                <a href="{{ url_for('view_issue', issue_id=issue.id) }}">
-                                    {{ issue.title }}
-                                </a>
-                            </td>
-                            <td>
-                                <span class="issue-description-preview">
-                                    {{ issue.description[:100] }}{% if issue.description|length > 100 %}...{% endif %}
-                                </span>
-                            </td>
-                            <td>{{ issue.company or '-' }}</td>
-                            <td>{{ issue.department or '-' }}</td>
-                            <td>{{ issue.application or '-' }}</td>
-                            <td>
-                                <span class="badge bg-info">{{ issue.category }}</span>
-                            </td>
-                            <td>
-                                {% if issue.priority == 'Critical' %}
-                                    <span class="badge priority-critical">
-                                        <i class="bi bi-flag-fill"></i> Critical
-                                    </span>
-                                {% elif issue.priority == 'High' %}
-                                    <span class="badge priority-high">
-                                        <i class="bi bi-flag-fill"></i> High
-                                    </span>
-                                {% elif issue.priority == 'Medium' %}
-                                    <span class="badge priority-medium">
-                                        <i class="bi bi-flag"></i> Medium
-                                    </span>
-                                {% else %}
-                                    <span class="badge priority-low">
-                                        <i class="bi bi-flag"></i> Low
-                                    </span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if issue.status == 'Open' %}
-                                    <span class="badge status-open">Open</span>
-                                {% elif issue.status == 'In Progress' %}
-                                    <span class="badge status-progress">In Progress</span>
-                                {% elif issue.status == 'Resolved' %}
-                                    <span class="badge status-resolved">Resolved</span>
-                                {% else %}
-                                    <span class="badge status-closed">Closed</span>
-                                {% endif %}
-                            </td>
-                            <td class="date-cell">
-                                <span class="text-muted">{{ issue.created_at | datetime_format }}</span>
-                            </td>
-                            <td>
-                                <div class="d-flex gap-1">
-                                    <a href="{{ url_for('view_issue', issue_id=issue.id) }}" class="btn btn-sm btn-secondary btn-icon" title="View">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    {% if current_user.is_admin() or current_user.is_hod() %}
-                                    <a href="{{ url_for('edit_issue', issue_id=issue.id) }}" class="btn btn-sm btn-warning btn-icon" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="12" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
-                                <p class="mt-2">No issues found</p>
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+
+    <!-- Open Issues -->
+    <div class="col-md-3">
+        <div class="card kpi-card kpi-card-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-muted">Open Issues</h6>
+                        <h2 class="card-title mb-0">{{ kpi.open_issues }}</h2>
+                    </div>
+                    <div class="kpi-icon">
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- In Progress -->
+    <div class="col-md-3">
+        <div class="card kpi-card kpi-card-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-muted">In Progress</h6>
+                        <h2 class="card-title mb-0">{{ kpi.in_progress_issues }}</h2>
+                    </div>
+                    <div class="kpi-icon">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resolved -->
+    <div class="col-md-3">
+        <div class="card kpi-card kpi-card-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-muted">Resolved</h6>
+                        <h2 class="card-title mb-0">{{ kpi.resolved_issues }}</h2>
+                    </div>
+                    <div class="kpi-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <!-- Issue Status Distribution -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Issue Status Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Priority Distribution -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Priority Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="priorityChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Category Distribution -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-tags"></i> Category Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issues by Company -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-building"></i> Issues by Company</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="companyChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('tracker') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-list-ul"></i> View All Issues
+                    </a>
+                    <a href="{{ url_for('tracker', status='Open') }}" class="btn btn-outline-danger">
+                        <i class="bi bi-exclamation-circle"></i> View Open Issues
+                    </a>
+                    {% if current_user.is_admin() or current_user.is_hod() %}
+                    <a href="{{ url_for('add_issue') }}" class="btn btn-outline-success">
+                        <i class="bi bi-plus-circle"></i> Add New Issue
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('export_csv') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-download"></i> Export CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.kpi-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.kpi-card-primary {
+    border-left: 4px solid #0d6efd;
+}
+
+.kpi-card-danger {
+    border-left: 4px solid #dc3545;
+}
+
+.kpi-card-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.kpi-card-success {
+    border-left: 4px solid #198754;
+}
+
+.kpi-icon {
+    font-size: 2.5rem;
+    opacity: 0.3;
+}
+
+.kpi-card-primary .kpi-icon {
+    color: #0d6efd;
+}
+
+.kpi-card-danger .kpi-icon {
+    color: #dc3545;
+}
+
+.kpi-card-warning .kpi-icon {
+    color: #ffc107;
+}
+
+.kpi-card-success .kpi-icon {
+    color: #198754;
+}
+
+.card-title {
+    font-size: 2rem;
+    font-weight: bold;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// Select all checkbox functionality
-document.getElementById('selectAll')?.addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('.issue-checkbox');
-    checkboxes.forEach(cb => cb.checked = this.checked);
+// Status Distribution Chart
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ chart_data.status_labels | tojson }},
+        datasets: [{
+            data: {{ chart_data.status_values | tojson }},
+            backgroundColor: ['#dc3545', '#ffc107', '#198754', '#6c757d']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Priority Distribution Chart
+const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+new Chart(priorityCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ chart_data.priority_labels | tojson }},
+        datasets: [{
+            label: 'Issues',
+            data: {{ chart_data.priority_values | tojson }},
+            backgroundColor: ['#28a745', '#ffc107', '#fd7e14', '#dc3545']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Category Distribution Chart
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+new Chart(categoryCtx, {
+    type: 'pie',
+    data: {
+        labels: {{ chart_data.category_labels | tojson }},
+        datasets: [{
+            data: {{ chart_data.category_values | tojson }},
+            backgroundColor: ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#fd7e14']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Company Distribution Chart
+const companyCtx = document.getElementById('companyChart').getContext('2d');
+new Chart(companyCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ chart_data.company_labels | tojson }},
+        datasets: [{
+            label: 'Issues',
+            data: {{ chart_data.company_values | tojson }},
+            backgroundColor: '#0d6efd'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
 });
 </script>
 {% endblock %}
