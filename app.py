@@ -207,12 +207,15 @@ def dashboard():
 
     # Company distribution by status (stacked, excluding closed)
     company_status_data = {}
+    valid_statuses = ['Not Started', 'In Progress', 'Resolved']
     for issue in active_issues:
         company = issue['company'] or 'Unassigned'
         status = issue['status']
         if company not in company_status_data:
             company_status_data[company] = {'Not Started': 0, 'In Progress': 0, 'Resolved': 0}
-        company_status_data[company][status] += 1
+        # Only count valid statuses (handle legacy data)
+        if status in valid_statuses:
+            company_status_data[company][status] += 1
 
     # Get top 10 companies by total issues
     sorted_companies = sorted(company_status_data.items(), key=lambda x: sum(x[1].values()), reverse=True)[:10]
