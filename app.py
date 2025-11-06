@@ -37,27 +37,6 @@ login_manager.login_view = 'login'
 db = Database()
 
 
-# Custom Jinja2 filter for date formatting
-@app.template_filter('datetime_format')
-def datetime_format_filter(date_string):
-    """Format date string to dd-MMM-YYYY format"""
-    if not date_string:
-        return '-'
-    try:
-        # Handle string date format
-        if isinstance(date_string, str):
-            date_obj = datetime.strptime(date_string[:10], '%Y-%m-%d')
-            return date_obj.strftime('%d-%b-%Y')
-        # If it's already a datetime object, just format it
-        elif hasattr(date_string, 'strftime'):
-            return date_string.strftime('%d-%b-%Y')
-        else:
-            return str(date_string)
-    except Exception as e:
-        # Return original value if formatting fails
-        return str(date_string) if date_string else '-'
-
-
 class FlaskUser(UserMixin):
     """User class for Flask-Login"""
 
@@ -1070,16 +1049,27 @@ def database_init():
 
 @app.template_filter('datetime_format')
 def datetime_format(value):
-    """Format datetime for display"""
+    """Format datetime for display as dd-MMM-YYYY"""
     if not value:
-        return ''
-    # SQLite stores datetime as string, so just format it nicely
+        return '-'
     try:
-        from datetime import datetime
-        dt = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
-        return dt.strftime('%b %d, %Y at %I:%M %p')
-    except:
-        return value
+        # Handle string date/datetime format
+        if isinstance(value, str):
+            # Try datetime format first (with time)
+            try:
+                dt = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                return dt.strftime('%d-%b-%Y')
+            except:
+                # Try date only format
+                dt = datetime.strptime(value[:10], '%Y-%m-%d')
+                return dt.strftime('%d-%b-%Y')
+        # If it's already a datetime object
+        elif hasattr(value, 'strftime'):
+            return value.strftime('%d-%b-%Y')
+        else:
+            return str(value)
+    except Exception as e:
+        return str(value) if value else '-'
 
 
 @app.template_filter('filesize_format')
