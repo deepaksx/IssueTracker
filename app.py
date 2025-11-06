@@ -36,6 +36,10 @@ login_manager.login_view = 'login'
 # Initialize database
 db = Database()
 
+# Ensure database is initialized (with auto-migration) when app starts
+# This runs both in development (python app.py) and production (gunicorn)
+db.init_db()
+
 
 class FlaskUser(UserMixin):
     """User class for Flask-Login"""
