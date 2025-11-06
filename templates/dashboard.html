@@ -201,8 +201,8 @@
                                     <span class="badge status-closed">Closed</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                <span class="text-muted">{{ issue.created_at[:10] if issue.created_at else '-' }}</span>
+                            <td class="date-cell">
+                                <span class="text-muted">{{ issue.created_at|format_date }}</span>
                             </td>
                             <td>
                                 <div class="d-flex gap-1">

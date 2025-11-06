@@ -10,6 +10,7 @@ from io import StringIO
 import os
 from werkzeug.utils import secure_filename
 import uuid
+from datetime import datetime
 from models import Database, User, Issue, AuditLog, Document, Company, Department, Application
 from config import config
 
@@ -34,6 +35,21 @@ login_manager.login_view = 'login'
 
 # Initialize database
 db = Database()
+
+
+# Custom Jinja2 filter for date formatting
+@app.template_filter('format_date')
+def format_date_filter(date_string):
+    """Format date string to dd-MMM-YYYY format"""
+    if not date_string:
+        return '-'
+    try:
+        # Parse the date string (assuming it's in YYYY-MM-DD format)
+        date_obj = datetime.strptime(date_string[:10], '%Y-%m-%d')
+        # Format to dd-MMM-YYYY
+        return date_obj.strftime('%d-%b-%Y')
+    except:
+        return date_string
 
 
 class FlaskUser(UserMixin):

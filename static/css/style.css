@@ -603,6 +603,11 @@ main.container {
     cursor: pointer;
 }
 
+/* Date column - prevent wrapping */
+.date-cell {
+    white-space: nowrap;
+}
+
 /* Issue ID column */
 .issue-id {
     font-weight: 600;
