@@ -478,7 +478,7 @@ main.container {
 }
 
 .btn-primary:hover {
-    background-color: #4A7BD8;
+    background-color: #C2410C;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
@@ -530,7 +530,7 @@ main.container {
 }
 
 .btn-info:hover {
-    background-color: #4A7BD8;
+    background-color: #C2410C;
 }
 
 .btn-sm {
@@ -696,7 +696,7 @@ main.container {
 .badge.bg-info,
 .badge.bg-primary,
 .priority-medium {
-    background-color: #DBEAFE;
+    background-color: #FFEDD5;
     color: var(--priority-medium);
 }
 
@@ -773,7 +773,7 @@ main.container {
 
 .form-control:focus, .form-select:focus {
     border-color: var(--primary-blue);
-    box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.1);
+    box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
     outline: none;
 }
 
@@ -886,7 +886,7 @@ main.container {
 }
 
 .dashboard-toggle .btn-status-all:hover {
-    background-color: #DBEAFE;
+    background-color: #FFEDD5;
 }
 
 .dashboard-toggle .btn-status-all.active {
@@ -970,7 +970,7 @@ main.container {
 }
 
 .alert-info {
-    background-color: #DBEAFE;
+    background-color: #FFEDD5;
     border-color: var(--primary-blue);
     color: #1E40AF;
 }
@@ -1118,7 +1118,7 @@ main.container {
 
 .login-card .form-control:focus {
     border-color: #5B8DEF;
-    box-shadow: 0 0 0 4px rgba(91, 141, 239, 0.1);
+    box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1);
     transform: translateY(-2px);
 }
 
@@ -1148,7 +1148,7 @@ main.container {
 
 .login-card .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(91, 141, 239, 0.4);
+    box-shadow: 0 8px 20px rgba(234, 88, 12, 0.4);
 }
 
 /* Avatar */
@@ -1861,7 +1861,7 @@ main.container {
 
 .toast-notification.alert-info {
     border-color: var(--primary-blue);
-    background: #DBEAFE;
+    background: #FFEDD5;
 }
 
 .toast-content {
